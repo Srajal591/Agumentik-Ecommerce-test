@@ -1,0 +1,309 @@
+import React from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  Alert,
+} from 'react-native';
+import { useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
+import { authService } from '../../src/api/authService';
+
+export default function ProfileScreen() {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    Alert.alert(
+      'Logout',
+      'Are you sure you want to logout?',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel',
+        },
+        {
+          text: 'Logout',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await authService.logout();
+              router.replace('/(auth)/welcome');
+            } catch (error) {
+              console.error('Logout error:', error);
+              Alert.alert('Error', 'Failed to logout. Please try again.');
+            }
+          },
+        },
+      ]
+    );
+  };
+  const menuItems = [
+    {
+      id: '1',
+      title: 'Edit Profile',
+      icon: 'person-outline',
+      onPress: () => {},
+    },
+    {
+      id: '2',
+      title: 'Addresses',
+      icon: 'location-outline',
+      onPress: () => {},
+    },
+    {
+      id: '3',
+      title: 'Wishlist',
+      icon: 'heart-outline',
+      onPress: () => {},
+    },
+    {
+      id: '4',
+      title: 'Payment Methods',
+      icon: 'card-outline',
+      onPress: () => {},
+    },
+    {
+      id: '5',
+      title: 'Notifications',
+      icon: 'notifications-outline',
+      onPress: () => {},
+    },
+    {
+      id: '6',
+      title: 'Help & Support',
+      icon: 'help-circle-outline',
+      onPress: () => {},
+    },
+    {
+      id: '7',
+      title: 'Settings',
+      icon: 'settings-outline',
+      onPress: () => {},
+    },
+  ];
+
+  return (
+    <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Profile</Text>
+        <TouchableOpacity>
+          <Ionicons name="create-outline" size={24} color={colors.textPrimary} />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Profile Card */}
+        <View style={styles.profileCard}>
+          <View style={styles.avatarContainer}>
+            <Image
+              source={{ uri: 'https://via.placeholder.com/100/704F38/FFFFFF?text=User' }}
+              style={styles.avatar}
+            />
+            <TouchableOpacity style={styles.editAvatarBtn}>
+              <Ionicons name="camera" size={16} color={colors.surface} />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.userName}>John Doe</Text>
+          <Text style={styles.userEmail}>john.doe@example.com</Text>
+          <Text style={styles.userPhone}>+91 98765 43210</Text>
+        </View>
+
+        {/* Stats */}
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>12</Text>
+            <Text style={styles.statLabel}>Orders</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>8</Text>
+            <Text style={styles.statLabel}>Wishlist</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statValue}>3</Text>
+            <Text style={styles.statLabel}>Addresses</Text>
+          </View>
+        </View>
+
+        {/* Menu Items */}
+        <View style={styles.menuContainer}>
+          {menuItems.map((item) => (
+            <TouchableOpacity key={item.id} style={styles.menuItem} onPress={item.onPress}>
+              <View style={styles.menuLeft}>
+                <View style={styles.menuIcon}>
+                  <Ionicons name={item.icon as any} size={22} color={colors.primary} />
+                </View>
+                <Text style={styles.menuTitle}>{item.title}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={colors.textSecondary} />
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Logout Button */}
+        <TouchableOpacity style={styles.logoutBtn} onPress={handleLogout}>
+          <Ionicons name="log-out-outline" size={22} color={colors.error} />
+          <Text style={styles.logoutText}>Logout</Text>
+        </TouchableOpacity>
+
+        <View style={styles.footer}>
+          <Text style={styles.footerText}>Version 1.0.0</Text>
+        </View>
+      </ScrollView>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: spacing.md,
+    paddingTop: 50,
+    paddingBottom: spacing.md,
+    backgroundColor: colors.surface,
+    ...shadows.small,
+  },
+  headerTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  profileCard: {
+    backgroundColor: colors.surface,
+    margin: spacing.md,
+    padding: spacing.lg,
+    borderRadius: borderRadius.lg,
+    alignItems: 'center',
+    ...shadows.medium,
+  },
+  avatarContainer: {
+    position: 'relative',
+    marginBottom: spacing.md,
+  },
+  avatar: {
+    width: 100,
+    height: 100,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.backgroundDark,
+  },
+  editAvatarBtn: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 32,
+    height: 32,
+    borderRadius: borderRadius.full,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 3,
+    borderColor: colors.surface,
+  },
+  userName: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  userEmail: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginBottom: 2,
+  },
+  userPhone: {
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  statsContainer: {
+    flexDirection: 'row',
+    marginHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    gap: spacing.sm,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: colors.surface,
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
+    alignItems: 'center',
+    ...shadows.small,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: colors.primary,
+    marginBottom: 4,
+  },
+  statLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+  },
+  menuContainer: {
+    backgroundColor: colors.surface,
+    marginHorizontal: spacing.md,
+    borderRadius: borderRadius.lg,
+    overflow: 'hidden',
+    ...shadows.small,
+  },
+  menuItem: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  menuLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  menuIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: borderRadius.md,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.sm,
+  },
+  menuTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: colors.textPrimary,
+  },
+  logoutBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: colors.surface,
+    marginHorizontal: spacing.md,
+    marginTop: spacing.md,
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
+    gap: spacing.xs,
+    ...shadows.small,
+  },
+  logoutText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: colors.error,
+  },
+  footer: {
+    alignItems: 'center',
+    paddingVertical: spacing.lg,
+  },
+  footerText: {
+    fontSize: 12,
+    color: colors.textLight,
+  },
+});
