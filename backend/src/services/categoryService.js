@@ -3,6 +3,16 @@ const Category = require('../models/Category');
 class CategoryService {
   // Create category
   async createCategory(categoryData) {
+    // Check if category with same name exists (and not deleted)
+    const existingCategory = await Category.findOne({
+      name: categoryData.name,
+      isDeleted: false,
+    });
+
+    if (existingCategory) {
+      throw new Error('Category with this name already exists');
+    }
+
     const category = await Category.create(categoryData);
     return category;
   }
@@ -31,6 +41,19 @@ class CategoryService {
 
   // Update category
   async updateCategory(categoryId, updateData) {
+    // If updating name, check if another category with same name exists (and not deleted)
+    if (updateData.name) {
+      const existingCategory = await Category.findOne({
+        name: updateData.name,
+        isDeleted: false,
+        _id: { $ne: categoryId }, // Exclude current category
+      });
+
+      if (existingCategory) {
+        throw new Error('Category with this name already exists');
+      }
+    }
+
     const category = await Category.findByIdAndUpdate(categoryId, updateData, {
       new: true,
       runValidators: true,

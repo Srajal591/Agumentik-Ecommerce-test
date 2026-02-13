@@ -71,9 +71,7 @@ const Products = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>Products Management</h1>
-      </div>
+      <h1 style={styles.title}>Products Management</h1>
 
       {/* Filters */}
       <div style={styles.filters}>
@@ -121,8 +119,7 @@ const Products = () => {
               <span
                 style={{
                   ...styles.badge,
-                  backgroundColor:
-                    product.status === 'active' ? colors.success + '20' : colors.error + '20',
+                  backgroundColor: product.status === 'active' ? colors.successLight : colors.errorLight,
                   color: product.status === 'active' ? colors.success : colors.error,
                 }}
               >
@@ -165,6 +162,7 @@ const Products = () => {
 const styles = {
   container: {
     maxWidth: '1400px',
+    width: '100%',
   },
   loading: {
     display: 'flex',
@@ -172,23 +170,23 @@ const styles = {
     alignItems: 'center',
     height: '400px',
     fontSize: '16px',
-    color: colors.textGray,
-  },
-  header: {
-    marginBottom: spacing.md,
+    color: colors.textSecondary,
   },
   title: {
     fontSize: '28px',
     fontWeight: 'bold',
-    color: colors.textDark,
+    color: colors.textPrimary,
+    marginBottom: spacing.lg,
   },
   filters: {
     display: 'flex',
     gap: spacing.sm,
     marginBottom: spacing.md,
+    flexWrap: 'wrap',
   },
   searchInput: {
     flex: 1,
+    minWidth: '200px',
     padding: '10px',
     border: `1px solid ${colors.border}`,
     borderRadius: '8px',
@@ -211,7 +209,7 @@ const styles = {
     backgroundColor: colors.surface,
     borderRadius: '12px',
     overflow: 'hidden',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
   },
   imageContainer: {
     width: '100%',
@@ -229,7 +227,7 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    color: colors.textGray,
+    color: colors.textSecondary,
     fontSize: '14px',
   },
   cardContent: {
@@ -238,12 +236,15 @@ const styles = {
   productName: {
     fontSize: '16px',
     fontWeight: '600',
-    color: colors.textDark,
+    color: colors.textPrimary,
     margin: '0 0 4px 0',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
   },
   productBrand: {
     fontSize: '14px',
-    color: colors.textGray,
+    color: colors.textSecondary,
     marginBottom: spacing.xs,
   },
   priceRow: {
@@ -259,7 +260,7 @@ const styles = {
   },
   originalPrice: {
     fontSize: '14px',
-    color: colors.textGray,
+    color: colors.textSecondary,
     textDecoration: 'line-through',
   },
   badge: {
@@ -294,6 +295,7 @@ const styles = {
     padding: spacing.md,
     backgroundColor: colors.surface,
     borderRadius: '12px',
+    flexWrap: 'wrap',
   },
   paginationButton: {
     padding: '8px 16px',
@@ -307,7 +309,7 @@ const styles = {
   },
   paginationInfo: {
     fontSize: '14px',
-    color: colors.textGray,
+    color: colors.textSecondary,
   },
 };
 

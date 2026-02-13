@@ -5,6 +5,10 @@ const { uploadToCloudinary, deleteFromCloudinary, getPublicIdFromUrl } = require
  */
 exports.uploadImage = async (req, res) => {
   try {
+    console.log('📤 Upload request received');
+    console.log('   File:', req.file ? req.file.originalname : 'NO FILE');
+    console.log('   Folder:', req.body.folder);
+
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -14,6 +18,9 @@ exports.uploadImage = async (req, res) => {
 
     const folder = req.body.folder || 'fashion-store';
     const result = await uploadToCloudinary(req.file.buffer, folder);
+
+    console.log('✅ Image uploaded to Cloudinary');
+    console.log('   URL:', result.secure_url);
 
     res.status(200).json({
       success: true,
@@ -27,7 +34,7 @@ exports.uploadImage = async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Upload error:', error);
+    console.error('❌ Upload error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to upload image',

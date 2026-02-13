@@ -3,7 +3,9 @@ const categoryService = require('../services/categoryService');
 // Create category
 exports.createCategory = async (req, res, next) => {
   try {
+    console.log('📝 Creating category with data:', req.body);
     const category = await categoryService.createCategory(req.body);
+    console.log('✅ Category created:', category);
 
     res.status(201).json({
       success: true,
@@ -11,6 +13,7 @@ exports.createCategory = async (req, res, next) => {
       data: category,
     });
   } catch (error) {
+    console.error('❌ Error creating category:', error.message);
     next(error);
   }
 };
@@ -18,7 +21,8 @@ exports.createCategory = async (req, res, next) => {
 // Get all categories
 exports.getAllCategories = async (req, res, next) => {
   try {
-    const includeInactive = req.user?.role === 'admin';
+    // Check if user is authenticated and is admin
+    const includeInactive = req.user && req.user.role === 'admin';
     const categories = await categoryService.getAllCategories(includeInactive);
 
     res.status(200).json({
@@ -47,7 +51,9 @@ exports.getCategoryById = async (req, res, next) => {
 // Update category
 exports.updateCategory = async (req, res, next) => {
   try {
+    console.log('📝 Updating category', req.params.id, 'with data:', req.body);
     const category = await categoryService.updateCategory(req.params.id, req.body);
+    console.log('✅ Category updated:', category);
 
     res.status(200).json({
       success: true,
@@ -55,6 +61,7 @@ exports.updateCategory = async (req, res, next) => {
       data: category,
     });
   } catch (error) {
+    console.error('❌ Error updating category:', error.message);
     next(error);
   }
 };

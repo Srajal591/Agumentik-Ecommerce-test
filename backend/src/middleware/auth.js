@@ -40,6 +40,30 @@ exports.authenticate = async (req, res, next) => {
   }
 };
 
+// Optional authentication - doesn't fail if no token
+exports.optionalAuthenticate = async (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1];
+
+    if (!token) {
+      // No token, continue without user
+      return next();
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.userId).select('-password');
+
+    if (user && !user.isDeleted && !user.isBlocked) {
+      req.user = user;
+    }
+
+    next();
+  } catch (error) {
+    // Invalid token, continue without user
+    next();
+  }
+};
+
 // Role-based authorization
 exports.authorize = (...roles) => {
   return (req, res, next) => {

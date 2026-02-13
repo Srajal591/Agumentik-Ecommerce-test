@@ -6,7 +6,7 @@ export const colors = {
   primaryDark: '#5C3F2E',    // Dark chocolate - Pressed/active states
 
   // Backgrounds (Clean & minimal)
-  background: '#EDEDED',     // Light gray background
+  background: '#F8F9FA',     // Very light gray background (whiter)
   backgroundDark: '#E0E0E0', // Slightly darker for sections
 
   // Text colors (High contrast for readability)
@@ -32,8 +32,8 @@ export const colors = {
   infoLight: '#E3F2FD',      // Light blue background
 
   // Borders & dividers (Very subtle)
-  border: '#D6D6D6',         // Light gray border
-  borderDark: '#BDBDBD',     // Darker border for emphasis
+  border: '#E5E7EB',         // Light gray border
+  borderDark: '#D1D5DB',     // Darker border for emphasis
 
   // Admin Sidebar (Chocolate theme)
   sidebarBg: '#704F38',      // Chocolate brown

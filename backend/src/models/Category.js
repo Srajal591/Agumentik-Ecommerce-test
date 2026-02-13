@@ -5,7 +5,6 @@ const categorySchema = new mongoose.Schema(
     name: {
       type: String,
       required: true,
-      unique: true,
       trim: true,
     },
     description: {
@@ -26,6 +25,16 @@ const categorySchema = new mongoose.Schema(
   },
   {
     timestamps: true,
+  }
+);
+
+// Create a compound unique index for name where isDeleted is false
+// This allows same name to exist if one is deleted
+categorySchema.index(
+  { name: 1, isDeleted: 1 },
+  { 
+    unique: true,
+    partialFilterExpression: { isDeleted: false }
   }
 );
 

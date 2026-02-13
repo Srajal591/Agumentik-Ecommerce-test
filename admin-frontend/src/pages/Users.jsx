@@ -52,13 +52,11 @@ const Users = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <h1 style={styles.title}>Users Management</h1>
-      </div>
+      <h1 style={styles.title}>Users Management</h1>
 
       <div style={styles.card}>
-        <div style={styles.table}>
-          <table style={styles.tableElement}>
+        <div style={styles.tableWrapper}>
+          <table style={styles.table}>
             <thead>
               <tr style={styles.tableHeader}>
                 <th style={styles.th}>Name</th>
@@ -70,44 +68,36 @@ const Users = () => {
               </tr>
             </thead>
             <tbody>
-              {users.length > 0 ? (
-                users.map((user) => (
-                  <tr key={user._id} style={styles.tableRow}>
-                    <td style={styles.td}>{user.name || 'N/A'}</td>
-                    <td style={styles.td}>{user.mobile}</td>
-                    <td style={styles.td}>{user.email || 'N/A'}</td>
-                    <td style={styles.td}>
-                      <span
-                        style={{
-                          ...styles.badge,
-                          backgroundColor: user.isBlocked ? colors.error + '20' : colors.success + '20',
-                          color: user.isBlocked ? colors.error : colors.success,
-                        }}
-                      >
-                        {user.isBlocked ? 'Blocked' : 'Active'}
-                      </span>
-                    </td>
-                    <td style={styles.td}>{new Date(user.createdAt).toLocaleDateString()}</td>
-                    <td style={styles.td}>
-                      <button
-                        onClick={() => handleToggleBlock(user._id)}
-                        style={{
-                          ...styles.button,
-                          backgroundColor: user.isBlocked ? colors.success : colors.error,
-                        }}
-                      >
-                        {user.isBlocked ? 'Unblock' : 'Block'}
-                      </button>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan="6" style={{ ...styles.td, textAlign: 'center' }}>
-                    No users found
+              {users.map((user) => (
+                <tr key={user._id} style={styles.tableRow}>
+                  <td style={styles.td}>{user.name || 'N/A'}</td>
+                  <td style={styles.td}>{user.mobile}</td>
+                  <td style={styles.td}>{user.email || 'N/A'}</td>
+                  <td style={styles.td}>
+                    <span
+                      style={{
+                        ...styles.badge,
+                        backgroundColor: user.isBlocked ? colors.errorLight : colors.successLight,
+                        color: user.isBlocked ? colors.error : colors.success,
+                      }}
+                    >
+                      {user.isBlocked ? 'Blocked' : 'Active'}
+                    </span>
+                  </td>
+                  <td style={styles.td}>{new Date(user.createdAt).toLocaleDateString()}</td>
+                  <td style={styles.td}>
+                    <button
+                      onClick={() => handleToggleBlock(user._id)}
+                      style={{
+                        ...styles.button,
+                        backgroundColor: user.isBlocked ? colors.success : colors.error,
+                      }}
+                    >
+                      {user.isBlocked ? 'Unblock' : 'Block'}
+                    </button>
                   </td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </table>
         </div>
@@ -140,6 +130,7 @@ const Users = () => {
 const styles = {
   container: {
     maxWidth: '1400px',
+    width: '100%',
   },
   loading: {
     display: 'flex',
@@ -147,28 +138,27 @@ const styles = {
     alignItems: 'center',
     height: '400px',
     fontSize: '16px',
-    color: colors.textGray,
-  },
-  header: {
-    marginBottom: spacing.md,
+    color: colors.textSecondary,
   },
   title: {
     fontSize: '28px',
     fontWeight: 'bold',
-    color: colors.textDark,
+    color: colors.textPrimary,
+    marginBottom: spacing.lg,
   },
   card: {
     backgroundColor: colors.surface,
     borderRadius: '12px',
     padding: spacing.md,
-    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
   },
-  table: {
+  tableWrapper: {
     overflowX: 'auto',
   },
-  tableElement: {
+  table: {
     width: '100%',
     borderCollapse: 'collapse',
+    minWidth: '800px',
   },
   tableHeader: {
     backgroundColor: colors.background,
@@ -176,9 +166,9 @@ const styles = {
   th: {
     padding: '12px',
     textAlign: 'left',
-    fontSize: '14px',
+    fontSize: '13px',
     fontWeight: '600',
-    color: colors.textDark,
+    color: colors.textPrimary,
     borderBottom: `2px solid ${colors.border}`,
   },
   tableRow: {
@@ -187,13 +177,14 @@ const styles = {
   td: {
     padding: '12px',
     fontSize: '14px',
-    color: colors.textDark,
+    color: colors.textSecondary,
   },
   badge: {
     padding: '4px 12px',
     borderRadius: '12px',
     fontSize: '12px',
     fontWeight: '600',
+    display: 'inline-block',
   },
   button: {
     padding: '6px 16px',
@@ -213,6 +204,7 @@ const styles = {
     marginTop: spacing.md,
     paddingTop: spacing.md,
     borderTop: `1px solid ${colors.border}`,
+    flexWrap: 'wrap',
   },
   paginationButton: {
     padding: '8px 16px',
@@ -227,7 +219,7 @@ const styles = {
   },
   paginationInfo: {
     fontSize: '14px',
-    color: colors.textGray,
+    color: colors.textSecondary,
   },
 };
 

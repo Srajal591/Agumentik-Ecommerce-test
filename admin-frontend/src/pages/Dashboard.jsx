@@ -2,13 +2,12 @@ import { useState, useEffect } from 'react';
 import { orderService } from '../api/orderService';
 import { userService } from '../api/userService';
 import { productService } from '../api/productService';
-import { colors, spacing, shadows, borderRadius } from '../theme/colors';
+import { colors, spacing } from '../theme/colors';
 import { 
   MdPeople, 
   MdShoppingCart, 
   MdShoppingBag, 
   MdPending,
-  MdTrendingUp,
   MdVisibility
 } from 'react-icons/md';
 
@@ -58,38 +57,10 @@ const Dashboard = () => {
   };
 
   const statCards = [
-    { 
-      label: 'Total Users', 
-      value: stats.totalUsers, 
-      icon: MdPeople, 
-      color: colors.primary,
-      bgColor: colors.primary + '15',
-      trend: '+12%'
-    },
-    { 
-      label: 'Total Orders', 
-      value: stats.totalOrders, 
-      icon: MdShoppingCart, 
-      color: colors.success,
-      bgColor: colors.successLight,
-      trend: '+8%'
-    },
-    { 
-      label: 'Total Products', 
-      value: stats.totalProducts, 
-      icon: MdShoppingBag, 
-      color: colors.info,
-      bgColor: colors.infoLight,
-      trend: '+5%'
-    },
-    { 
-      label: 'Pending Orders', 
-      value: stats.pendingOrders, 
-      icon: MdPending, 
-      color: colors.warning,
-      bgColor: colors.warningLight,
-      trend: '-3%'
-    },
+    { label: 'Total Users', value: stats.totalUsers, icon: MdPeople, color: colors.primary },
+    { label: 'Total Orders', value: stats.totalOrders, icon: MdShoppingCart, color: colors.success },
+    { label: 'Total Products', value: stats.totalProducts, icon: MdShoppingBag, color: colors.info },
+    { label: 'Pending Orders', value: stats.pendingOrders, icon: MdPending, color: colors.warning },
   ];
 
   if (loading) {
@@ -98,25 +69,14 @@ const Dashboard = () => {
 
   return (
     <div style={styles.container}>
-      <div style={styles.header}>
-        <div>
-          <h1 style={styles.title}>Dashboard</h1>
-          <p style={styles.subtitle}>Welcome back! Here's what's happening today.</p>
-        </div>
-      </div>
+      <h1 style={styles.title}>Dashboard</h1>
 
       {/* Stats Cards */}
       <div style={styles.statsGrid}>
         {statCards.map((stat, index) => (
           <div key={index} style={styles.statCard}>
-            <div style={styles.statHeader}>
-              <div style={{ ...styles.statIconContainer, backgroundColor: stat.bgColor }}>
-                <stat.icon style={{ ...styles.statIcon, color: stat.color }} />
-              </div>
-              <div style={styles.trendBadge}>
-                <MdTrendingUp style={styles.trendIcon} />
-                <span>{stat.trend}</span>
-              </div>
+            <div style={{ ...styles.statIcon, backgroundColor: stat.color + '20' }}>
+              <stat.icon style={{ color: stat.color, fontSize: '28px' }} />
             </div>
             <div style={styles.statContent}>
               <div style={styles.statValue}>{stat.value}</div>
@@ -131,15 +91,15 @@ const Dashboard = () => {
         <div style={styles.sectionHeader}>
           <h2 style={styles.sectionTitle}>Recent Orders</h2>
           <button style={styles.viewAllButton}>
-            <MdVisibility style={styles.viewAllIcon} />
-            <span>View All</span>
+            <MdVisibility style={{ marginRight: '6px' }} />
+            View All
           </button>
         </div>
-        <div style={styles.tableContainer}>
+        <div style={styles.tableWrapper}>
           <table style={styles.table}>
             <thead>
               <tr style={styles.tableHeader}>
-                <th style={styles.th}>Order Number</th>
+                <th style={styles.th}>Order #</th>
                 <th style={styles.th}>Customer</th>
                 <th style={styles.th}>Total</th>
                 <th style={styles.th}>Status</th>
@@ -150,30 +110,20 @@ const Dashboard = () => {
               {recentOrders.length > 0 ? (
                 recentOrders.map((order) => (
                   <tr key={order._id} style={styles.tableRow}>
-                    <td style={styles.td}>
-                      <span style={styles.orderNumber}>{order.orderNumber}</span>
-                    </td>
+                    <td style={styles.td}>{order.orderNumber}</td>
                     <td style={styles.td}>{order.user?.name || order.user?.mobile}</td>
+                    <td style={styles.td}>₹{order.total}</td>
                     <td style={styles.td}>
-                      <span style={styles.price}>₹{order.total}</span>
+                      <span style={getStatusStyle(order.orderStatus)}>{order.orderStatus}</span>
                     </td>
-                    <td style={styles.td}>
-                      <span style={getStatusStyle(order.orderStatus)}>
-                        {order.orderStatus}
-                      </span>
-                    </td>
-                    <td style={styles.td}>
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </td>
+                    <td style={styles.td}>{new Date(order.createdAt).toLocaleDateString()}</td>
                   </tr>
                 ))
               ) : (
                 <tr>
                   <td colSpan="5" style={{ ...styles.td, textAlign: 'center', padding: '40px' }}>
-                    <div style={styles.emptyState}>
-                      <MdShoppingCart style={styles.emptyIcon} />
-                      <p style={styles.emptyText}>No orders yet</p>
-                    </div>
+                    <MdShoppingCart style={{ fontSize: '48px', color: colors.textLight }} />
+                    <p>No orders yet</p>
                   </td>
                 </tr>
               )}
@@ -186,15 +136,6 @@ const Dashboard = () => {
 };
 
 const getStatusStyle = (status) => {
-  const baseStyle = {
-    padding: '6px 14px',
-    borderRadius: borderRadius.full,
-    fontSize: '12px',
-    fontWeight: '600',
-    textTransform: 'capitalize',
-    display: 'inline-block',
-  };
-
   const statusColors = {
     pending: { backgroundColor: colors.warningLight, color: colors.warning },
     confirmed: { backgroundColor: colors.infoLight, color: colors.info },
@@ -203,12 +144,21 @@ const getStatusStyle = (status) => {
     cancelled: { backgroundColor: colors.errorLight, color: colors.error },
   };
 
-  return { ...baseStyle, ...statusColors[status] };
+  return {
+    padding: '4px 12px',
+    borderRadius: '12px',
+    fontSize: '12px',
+    fontWeight: '600',
+    textTransform: 'capitalize',
+    display: 'inline-block',
+    ...statusColors[status],
+  };
 };
 
 const styles = {
   container: {
     maxWidth: '1400px',
+    width: '100%',
   },
   loading: {
     display: 'flex',
@@ -218,162 +168,107 @@ const styles = {
     fontSize: '16px',
     color: colors.textSecondary,
   },
-  header: {
-    marginBottom: spacing.lg,
-  },
   title: {
-    fontSize: '32px',
+    fontSize: '28px',
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: '4px',
-  },
-  subtitle: {
-    fontSize: '15px',
-    color: colors.textSecondary,
+    marginBottom: spacing.lg,
   },
   statsGrid: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))',
-    gap: spacing.lg,
-    marginBottom: spacing.xl,
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    gap: spacing.md,
+    marginBottom: spacing.lg,
   },
   statCard: {
     backgroundColor: colors.surface,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    boxShadow: shadows.md,
-    transition: 'transform 0.2s ease, box-shadow 0.2s ease',
-    cursor: 'pointer',
-  },
-  statHeader: {
+    padding: spacing.md,
+    borderRadius: '12px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
     display: 'flex',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.md,
+    gap: spacing.md,
   },
-  statIconContainer: {
+  statIcon: {
     width: '56px',
     height: '56px',
-    borderRadius: borderRadius.lg,
+    borderRadius: '12px',
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  statIcon: {
-    fontSize: '28px',
-  },
-  trendBadge: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '4px',
-    padding: '4px 10px',
-    backgroundColor: colors.successLight,
-    color: colors.success,
-    borderRadius: borderRadius.full,
-    fontSize: '12px',
-    fontWeight: '600',
-  },
-  trendIcon: {
-    fontSize: '14px',
+    flexShrink: 0,
   },
   statContent: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
+    flex: 1,
+    minWidth: 0,
   },
   statValue: {
-    fontSize: '32px',
+    fontSize: '28px',
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
   statLabel: {
     fontSize: '14px',
     color: colors.textSecondary,
-    fontWeight: '500',
   },
   section: {
     backgroundColor: colors.surface,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
-    boxShadow: shadows.md,
+    padding: spacing.md,
+    borderRadius: '12px',
+    boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
   },
   sectionHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: spacing.lg,
+    marginBottom: spacing.md,
+    flexWrap: 'wrap',
+    gap: spacing.sm,
   },
   sectionTitle: {
-    fontSize: '20px',
+    fontSize: '18px',
     fontWeight: '600',
     color: colors.textPrimary,
+    margin: 0,
   },
   viewAllButton: {
     display: 'flex',
     alignItems: 'center',
-    gap: spacing.xs,
-    padding: '10px 18px',
+    padding: '8px 16px',
     backgroundColor: colors.primary,
     color: colors.surface,
     border: 'none',
-    borderRadius: borderRadius.md,
+    borderRadius: '8px',
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'all 0.2s ease',
+    transition: 'opacity 0.2s',
   },
-  viewAllIcon: {
-    fontSize: '18px',
-  },
-  tableContainer: {
+  tableWrapper: {
     overflowX: 'auto',
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
+    minWidth: '600px',
   },
   tableHeader: {
-    backgroundColor: colors.backgroundDark,
-    borderRadius: borderRadius.md,
+    backgroundColor: colors.background,
   },
   th: {
-    padding: '14px 16px',
+    padding: '12px',
     textAlign: 'left',
     fontSize: '13px',
     fontWeight: '600',
-    color: colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
+    color: colors.textPrimary,
+    borderBottom: `2px solid ${colors.border}`,
   },
   tableRow: {
     borderBottom: `1px solid ${colors.border}`,
-    transition: 'background-color 0.2s ease',
   },
   td: {
-    padding: '16px',
+    padding: '12px',
     fontSize: '14px',
-    color: colors.textPrimary,
-  },
-  orderNumber: {
-    fontWeight: '600',
-    color: colors.primary,
-  },
-  price: {
-    fontWeight: '600',
-    color: colors.textPrimary,
-  },
-  emptyState: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: spacing.sm,
-  },
-  emptyIcon: {
-    fontSize: '48px',
-    color: colors.textLight,
-  },
-  emptyText: {
-    fontSize: '15px',
     color: colors.textSecondary,
   },
 };

@@ -34,7 +34,8 @@ input:focus,
 textarea:focus,
 select:focus {
   outline: none;
-  border-color: #F97316;
+  border-color: #704F38;
+  box-shadow: 0 0 0 3px rgba(112, 79, 56, 0.1);
 }
 
 /* Scrollbar Styling */
@@ -54,4 +55,54 @@ select:focus {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  h1 {
+    font-size: 24px !important;
+  }
+
+  h2 {
+    font-size: 20px !important;
+  }
+
+  h3 {
+    font-size: 18px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 13px;
+  }
+
+  h1 {
+    font-size: 22px !important;
+  }
+
+  h2 {
+    font-size: 18px !important;
+  }
+
+  h3 {
+    font-size: 16px !important;
+  }
+}
+
+/* Mobile Responsive Utilities */
+@media (max-width: 768px) {
+  .hide-mobile {
+    display: none !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .show-mobile {
+    display: none !important;
+  }
 }
