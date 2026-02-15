@@ -8,6 +8,7 @@ import {
   Image,
   Alert,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
@@ -87,7 +88,7 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profile</Text>
@@ -96,7 +97,9 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}>
         {/* Profile Card */}
         <View style={styles.profileCard}>
           <View style={styles.avatarContainer}>
@@ -154,7 +157,7 @@ export default function ProfileScreen() {
           <Text style={styles.footerText}>Version 1.0.0</Text>
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -168,33 +171,40 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.md,
-    paddingTop: 50,
-    paddingBottom: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
     backgroundColor: colors.surface,
-    ...shadows.small,
+    borderBottomLeftRadius: borderRadius.xl,
+    borderBottomRightRadius: borderRadius.xl,
+    ...shadows.medium,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     color: colors.textPrimary,
+  },
+  scrollContent: {
+    paddingBottom: 110, // Floating tab bar height + extra padding
   },
   profileCard: {
     backgroundColor: colors.surface,
     margin: spacing.md,
-    padding: spacing.lg,
-    borderRadius: borderRadius.lg,
+    padding: spacing.xl,
+    borderRadius: borderRadius.xl,
     alignItems: 'center',
-    ...shadows.medium,
+    ...shadows.large,
   },
   avatarContainer: {
     position: 'relative',
     marginBottom: spacing.md,
   },
   avatar: {
-    width: 100,
-    height: 100,
+    width: 110,
+    height: 110,
     borderRadius: borderRadius.full,
     backgroundColor: colors.backgroundDark,
+    borderWidth: 4,
+    borderColor: colors.background,
   },
   editAvatarBtn: {
     position: 'absolute',
@@ -233,10 +243,10 @@ const styles = StyleSheet.create({
   statCard: {
     flex: 1,
     backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderRadius: borderRadius.lg,
+    padding: spacing.md + 2,
+    borderRadius: borderRadius.xl,
     alignItems: 'center',
-    ...shadows.small,
+    ...shadows.medium,
   },
   statValue: {
     fontSize: 24,
@@ -251,9 +261,9 @@ const styles = StyleSheet.create({
   menuContainer: {
     backgroundColor: colors.surface,
     marginHorizontal: spacing.md,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xl,
     overflow: 'hidden',
-    ...shadows.small,
+    ...shadows.medium,
   },
   menuItem: {
     flexDirection: 'row',

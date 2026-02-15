@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   FlatList,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
 
@@ -70,7 +71,7 @@ export default function HomeScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
@@ -100,7 +101,10 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false} 
+        style={styles.content}
+        contentContainerStyle={styles.contentContainer}>
         {/* Categories */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
@@ -168,7 +172,7 @@ export default function HomeScreen() {
           />
         </View>
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -179,10 +183,12 @@ const styles = StyleSheet.create({
   },
   header: {
     backgroundColor: colors.surface,
-    paddingTop: 50,
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
-    ...shadows.small,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
+    borderBottomLeftRadius: borderRadius.xl,
+    borderBottomRightRadius: borderRadius.xl,
+    ...shadows.medium,
   },
   headerTop: {
     flexDirection: 'row',
@@ -191,11 +197,12 @@ const styles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   greeting: {
-    fontSize: 16,
+    fontSize: 14,
     color: colors.textSecondary,
+    fontWeight: '500',
   },
   welcomeText: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: 'bold',
     color: colors.textPrimary,
     marginTop: 4,
@@ -216,9 +223,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.background,
-    borderRadius: borderRadius.md,
+    borderRadius: borderRadius.lg,
     paddingHorizontal: spacing.md,
-    height: 48,
+    height: 52,
+    ...shadows.small,
   },
   searchIcon: {
     marginRight: spacing.sm,
@@ -233,6 +241,9 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
+  },
+  contentContainer: {
+    paddingBottom: 110, // Floating tab bar height + extra padding
   },
   section: {
     marginTop: spacing.lg,
@@ -263,17 +274,17 @@ const styles = StyleSheet.create({
     width: '23%',
   },
   categoryIcon: {
-    width: 64,
-    height: 64,
-    borderRadius: borderRadius.md,
+    width: 70,
+    height: 70,
+    borderRadius: borderRadius.lg,
     backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.xs,
-    ...shadows.small,
+    ...shadows.medium,
   },
   categoryName: {
-    fontSize: 12,
+    fontSize: 13,
     color: colors.textPrimary,
     fontWeight: '600',
     textAlign: 'center',
@@ -281,11 +292,11 @@ const styles = StyleSheet.create({
   banner: {
     marginHorizontal: spacing.md,
     marginTop: spacing.lg,
-    height: 160,
-    borderRadius: borderRadius.lg,
+    height: 180,
+    borderRadius: borderRadius.xl,
     backgroundColor: colors.primary,
     overflow: 'hidden',
-    ...shadows.medium,
+    ...shadows.large,
   },
   bannerContent: {
     flex: 1,
@@ -293,52 +304,54 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   bannerTitle: {
-    fontSize: 28,
+    fontSize: 32,
     fontWeight: 'bold',
     color: colors.surface,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   bannerSubtitle: {
-    fontSize: 16,
+    fontSize: 18,
     color: colors.surface,
     marginBottom: spacing.md,
+    fontWeight: '500',
   },
   bannerBtn: {
     backgroundColor: colors.surface,
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.lg,
     alignSelf: 'flex-start',
+    ...shadows.small,
   },
   bannerBtnText: {
     color: colors.primary,
     fontWeight: 'bold',
-    fontSize: 14,
+    fontSize: 15,
   },
   productsList: {
     paddingRight: spacing.md,
   },
   productCard: {
-    width: 180,
+    width: 190,
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xl,
     marginRight: spacing.md,
     overflow: 'hidden',
-    ...shadows.medium,
+    ...shadows.large,
   },
   productImage: {
     width: '100%',
-    height: 200,
+    height: 220,
     backgroundColor: colors.backgroundDark,
   },
   productInfo: {
-    padding: spacing.sm,
+    padding: spacing.md,
   },
   productName: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -351,7 +364,7 @@ const styles = StyleSheet.create({
     marginLeft: 4,
   },
   productPrice: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.primary,
     marginBottom: spacing.sm,
@@ -361,13 +374,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.primary,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
-    gap: 4,
+    paddingVertical: spacing.sm,
+    borderRadius: borderRadius.md,
+    gap: 6,
   },
   addToCartText: {
     color: colors.surface,
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '600',
   },
 });

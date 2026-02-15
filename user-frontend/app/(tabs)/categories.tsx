@@ -8,6 +8,7 @@ import {
   Image,
   FlatList,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
 
@@ -107,7 +108,7 @@ export default function CategoriesScreen() {
   );
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Categories</Text>
@@ -136,7 +137,7 @@ export default function CategoriesScreen() {
         contentContainerStyle={styles.productsGrid}
         columnWrapperStyle={styles.productRow}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -150,13 +151,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.md,
-    paddingTop: 50,
-    paddingBottom: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
     backgroundColor: colors.surface,
-    ...shadows.small,
+    borderBottomLeftRadius: borderRadius.xl,
+    borderBottomRightRadius: borderRadius.xl,
+    ...shadows.medium,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
@@ -167,23 +170,23 @@ const styles = StyleSheet.create({
   categoryCard: {
     alignItems: 'center',
     marginRight: spacing.md,
-    padding: spacing.sm,
-    borderRadius: borderRadius.md,
+    padding: spacing.md,
+    borderRadius: borderRadius.xl,
     backgroundColor: colors.surface,
-    minWidth: 100,
-    ...shadows.small,
+    minWidth: 110,
+    ...shadows.medium,
   },
   categoryCardActive: {
     backgroundColor: colors.primary,
   },
   categoryIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: borderRadius.md,
+    width: 56,
+    height: 56,
+    borderRadius: borderRadius.lg,
     backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
   categoryIconActive: {
     backgroundColor: colors.primaryLight,
@@ -203,7 +206,7 @@ const styles = StyleSheet.create({
   },
   productsGrid: {
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.lg,
+    paddingBottom: 110, // Floating tab bar height + extra padding
   },
   productRow: {
     justifyContent: 'space-between',
@@ -212,13 +215,13 @@ const styles = StyleSheet.create({
   productCard: {
     width: '48%',
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xl,
     overflow: 'hidden',
-    ...shadows.medium,
+    ...shadows.large,
   },
   productImage: {
     width: '100%',
-    height: 200,
+    height: 220,
     backgroundColor: colors.backgroundDark,
   },
   wishlistBtn: {

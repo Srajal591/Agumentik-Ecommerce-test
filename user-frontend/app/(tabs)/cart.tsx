@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
 
@@ -51,7 +52,7 @@ export default function CartScreen() {
   const total = subtotal + shipping;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Shopping Cart</Text>
@@ -68,7 +69,10 @@ export default function CartScreen() {
         </View>
       ) : (
         <>
-          <ScrollView style={styles.cartList} showsVerticalScrollIndicator={false}>
+          <ScrollView 
+            style={styles.cartList} 
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.cartListContent}>
             {cartItems.map((item) => (
               <View key={item.id} style={styles.cartItem}>
                 <Image source={{ uri: item.image }} style={styles.itemImage} />
@@ -126,7 +130,7 @@ export default function CartScreen() {
           </View>
         </>
       )}
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -140,13 +144,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.md,
-    paddingTop: 50,
-    paddingBottom: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
     backgroundColor: colors.surface,
-    ...shadows.small,
+    borderBottomLeftRadius: borderRadius.xl,
+    borderBottomRightRadius: borderRadius.xl,
+    ...shadows.medium,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
@@ -182,18 +188,21 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
   },
+  cartListContent: {
+    paddingBottom: spacing.md,
+  },
   cartItem: {
     flexDirection: 'row',
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.sm,
+    borderRadius: borderRadius.xl,
+    padding: spacing.md,
     marginBottom: spacing.md,
-    ...shadows.small,
+    ...shadows.medium,
   },
   itemImage: {
-    width: 80,
-    height: 100,
-    borderRadius: borderRadius.md,
+    width: 90,
+    height: 110,
+    borderRadius: borderRadius.lg,
     backgroundColor: colors.backgroundDark,
   },
   itemDetails: {
@@ -249,9 +258,10 @@ const styles = StyleSheet.create({
   },
   summary: {
     backgroundColor: colors.surface,
-    padding: spacing.md,
-    borderTopLeftRadius: borderRadius.lg,
-    borderTopRightRadius: borderRadius.lg,
+    padding: spacing.lg,
+    paddingBottom: 120,
+    borderTopLeftRadius: borderRadius.xl,
+    borderTopRightRadius: borderRadius.xl,
     ...shadows.large,
   },
   summaryRow: {
@@ -286,16 +296,17 @@ const styles = StyleSheet.create({
   checkoutBtn: {
     flexDirection: 'row',
     backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
+    paddingVertical: spacing.md + 2,
+    borderRadius: borderRadius.lg,
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: spacing.md,
-    gap: spacing.xs,
+    gap: spacing.sm,
+    ...shadows.medium,
   },
   checkoutText: {
     color: colors.surface,
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: 'bold',
   },
 });

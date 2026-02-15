@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
 
@@ -72,7 +73,7 @@ export default function OrdersScreen() {
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>My Orders</Text>
@@ -81,7 +82,10 @@ export default function OrdersScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.ordersList} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.ordersList} 
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.ordersListContent}>
         {orders.map((order) => (
           <TouchableOpacity key={order.id} style={styles.orderCard}>
             <View style={styles.orderHeader}>
@@ -127,7 +131,7 @@ export default function OrdersScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -141,13 +145,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.md,
-    paddingTop: 50,
-    paddingBottom: spacing.md,
+    paddingTop: spacing.md,
+    paddingBottom: spacing.lg,
     backgroundColor: colors.surface,
-    ...shadows.small,
+    borderBottomLeftRadius: borderRadius.xl,
+    borderBottomRightRadius: borderRadius.xl,
+    ...shadows.medium,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
@@ -156,12 +162,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.md,
   },
+  ordersListContent: {
+    paddingBottom: 110, // Floating tab bar height + extra padding
+  },
   orderCard: {
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
-    padding: spacing.md,
+    borderRadius: borderRadius.xl,
+    padding: spacing.md + 2,
     marginBottom: spacing.md,
-    ...shadows.medium,
+    ...shadows.large,
   },
   orderHeader: {
     flexDirection: 'row',
