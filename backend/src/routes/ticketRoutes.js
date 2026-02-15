@@ -10,7 +10,7 @@ router.get('/', authenticate, paginate, ticketController.getAllTickets);
 router.get('/:id', authenticate, ticketController.getTicketById);
 router.post('/:id/messages', authenticate, ticketController.addMessage);
 
-// Admin routes
-router.patch('/:id/status', authenticate, authorize('admin'), ticketController.updateTicketStatus);
+// Admin routes (both admin and super_admin)
+router.patch('/:id/status', authenticate, authorize('admin', 'super_admin'), ticketController.updateTicketStatus);
 
 module.exports = router;

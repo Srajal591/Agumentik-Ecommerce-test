@@ -7,14 +7,18 @@ const { sendOTPEmail, sendWelcomeEmail } = require('../utils/emailService');
 class AuthService {
   // Admin login
   async adminLogin(email, password) {
-    const user = await User.findOne({ email, role: 'admin', isDeleted: false });
+    const user = await User.findOne({ 
+      email, 
+      role: { $in: ['admin', 'super_admin'] }, 
+      isDeleted: false 
+    });
 
     if (!user) {
       throw new Error('Invalid credentials');
     }
 
     if (user.isBlocked) {
-      throw new Error('Your account has been blocked');
+      throw new Error('You are blocked. Unable to login.');
     }
 
     const isPasswordValid = await user.comparePassword(password);

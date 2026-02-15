@@ -17,20 +17,36 @@ const Sidebar = ({ setIsAuthenticated, isOpen, onClose }) => {
   const user = authService.getStoredUser();
 
   const handleLogout = () => {
-    authService.logout();
-    setIsAuthenticated(false);
-    navigate('/login');
+    const confirmed = window.confirm('Do you want to logout?');
+    if (confirmed) {
+      authService.logout();
+      setIsAuthenticated(false);
+      navigate('/login');
+    }
   };
 
-  const menuItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: MdDashboard },
-    { path: '/users', label: 'Users', icon: MdPeople },
-    { path: '/categories', label: 'Categories', icon: MdCategory },
-    { path: '/products', label: 'Products', icon: MdShoppingBag },
-    { path: '/orders', label: 'Orders', icon: MdShoppingCart },
-    { path: '/tickets', label: 'Tickets', icon: MdConfirmationNumber },
-    { path: '/returns', label: 'Returns', icon: MdAssignmentReturn },
+  // Super Admin menu items
+  const superAdminMenuItems = [
+    { path: '/super-admin/dashboard', label: 'Dashboard', icon: MdDashboard },
+    { path: '/super-admin/users', label: 'Users', icon: MdPeople },
+    { path: '/super-admin/admin-management', label: 'Admin Management', icon: MdPeople },
+    { path: '/super-admin/categories', label: 'Categories', icon: MdCategory },
+    { path: '/super-admin/products', label: 'Products', icon: MdShoppingBag },
+    { path: '/super-admin/orders', label: 'Orders', icon: MdShoppingCart },
+    { path: '/super-admin/tickets', label: 'Tickets', icon: MdConfirmationNumber },
+    { path: '/super-admin/returns', label: 'Returns', icon: MdAssignmentReturn },
   ];
+
+  // Admin menu items (only 4 links)
+  const adminMenuItems = [
+    { path: '/admin/dashboard', label: 'Dashboard', icon: MdDashboard },
+    { path: '/admin/products', label: 'Products', icon: MdShoppingBag },
+    { path: '/admin/orders', label: 'Orders', icon: MdShoppingCart },
+    { path: '/admin/returns', label: 'Returns', icon: MdAssignmentReturn },
+  ];
+
+  // Select menu items based on role
+  const menuItems = user?.role === 'super_admin' ? superAdminMenuItems : adminMenuItems;
 
   return (
     <>

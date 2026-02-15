@@ -4,9 +4,9 @@ const uploadController = require('../controllers/uploadController');
 const upload = require('../middleware/upload');
 const { authenticate, authorize } = require('../middleware/auth');
 
-// All upload routes require authentication and admin role
+// All upload routes require authentication and admin/super_admin role
 router.use(authenticate);
-router.use(authorize('admin'));
+router.use(authorize('admin', 'super_admin'));
 
 // Upload single image
 router.post('/single', upload.single('image'), uploadController.uploadImage);

@@ -1,91 +1,58 @@
 import { useState, useEffect } from 'react';
-import { userService } from '../api/userService';
-import { colors, spacing } from '../theme/colors';
-import { MdPeople, MdAdminPanelSettings } from 'react-icons/md';
+import { colors, spacing } from '../../theme/colors';
+import { MdAdd, MdEdit, MdDelete, MdVisibility, MdVisibilityOff } from 'react-icons/md';
+import axios from '../../api/axios';
 
-const Users = () => {
-  const [users, setUsers] = useState([]);
+const AdminProducts = () => {
+  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, limit: 10, total: 0 });
-  const [roleFilter, setRoleFilter] = useState('users'); // 'users' or 'admins'
 
   useEffect(() => {
-    fetchUsers();
-  }, [pagination.page, roleFilter]);
+    fetchProducts();
+  }, [pagination.page]);
 
-  const fetchUsers = async () => {
+  const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await userService.getAll({
-        page: pagination.page,
-        limit: pagination.limit,
-        role: roleFilter,
-      });
-
+      const response = await axios.get(`/products?page=${pagination.page}&limit=${pagination.limit}`);
+      
       if (response.success) {
-        setUsers(response.data.users);
+        setProducts(response.data.products);
         setPagination((prev) => ({ ...prev, total: response.data.pagination.total }));
       }
     } catch (error) {
-      console.error('Error fetching users:', error);
-      alert('Failed to fetch users');
+      console.error('Error fetching products:', error);
+      alert('Failed to fetch products');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleToggleBlock = async (userId) => {
-    if (!confirm('Are you sure you want to toggle block status for this user?')) return;
-
+  const handleToggleStatus = async (productId, currentStatus) => {
     try {
-      const response = await userService.toggleBlock(userId);
+      const response = await axios.patch(`/products/${productId}/status`, {
+        isActive: !currentStatus,
+      });
+      
       if (response.success) {
-        fetchUsers();
-        alert('User status updated successfully');
+        alert('Product status updated successfully');
+        fetchProducts();
       }
     } catch (error) {
-      console.error('Error toggling user block:', error);
-      alert(error.message || 'Failed to update user status');
+      console.error('Error updating product status:', error);
+      alert('Failed to update product status');
     }
   };
 
-  const handleRoleFilterChange = (filter) => {
-    setRoleFilter(filter);
-    setPagination((prev) => ({ ...prev, page: 1 })); // Reset to page 1
-  };
-
   if (loading) {
-    return <div style={styles.loading}>Loading...</div>;
+    return <div style={styles.loading}>Loading products...</div>;
   }
 
   return (
     <div style={styles.container}>
       <div style={styles.header}>
-        <h1 style={styles.title}>Users Management</h1>
-        
-        {/* Role Filter Buttons */}
-        <div style={styles.filterButtons}>
-          <button
-            onClick={() => handleRoleFilterChange('users')}
-            style={{
-              ...styles.filterButton,
-              ...(roleFilter === 'users' ? styles.filterButtonActive : {}),
-            }}
-          >
-            <MdPeople size={20} />
-            Users
-          </button>
-          <button
-            onClick={() => handleRoleFilterChange('admins')}
-            style={{
-              ...styles.filterButton,
-              ...(roleFilter === 'admins' ? styles.filterButtonActive : {}),
-            }}
-          >
-            <MdAdminPanelSettings size={20} />
-            Admins
-          </button>
-        </div>
+        <h1 style={styles.title}>Products Management</h1>
       </div>
 
       <div style={styles.card}>
@@ -93,65 +60,61 @@ const Users = () => {
           <table style={styles.table}>
             <thead>
               <tr style={styles.tableHeader}>
+                <th style={styles.th}>Image</th>
                 <th style={styles.th}>Name</th>
-                <th style={styles.th}>Mobile</th>
-                <th style={styles.th}>Email</th>
-                <th style={styles.th}>Role</th>
+                <th style={styles.th}>Category</th>
+                <th style={styles.th}>Price</th>
+                <th style={styles.th}>Stock</th>
                 <th style={styles.th}>Status</th>
-                <th style={styles.th}>Joined</th>
                 <th style={styles.th}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {users.map((user) => (
-                <tr key={user._id} style={styles.tableRow}>
-                  <td style={styles.td}>{user.name || 'N/A'}</td>
-                  <td style={styles.td}>{user.mobile}</td>
-                  <td style={styles.td}>{user.email || 'N/A'}</td>
+              {products.map((product) => (
+                <tr key={product._id} style={styles.tableRow}>
+                  <td style={styles.td}>
+                    {product.images && product.images[0] ? (
+                      <img src={product.images[0]} alt={product.name} style={styles.productImage} />
+                    ) : (
+                      <div style={styles.noImage}>No Image</div>
+                    )}
+                  </td>
+                  <td style={styles.td}>{product.name}</td>
+                  <td style={styles.td}>{product.category?.name || 'N/A'}</td>
+                  <td style={styles.td}>₹{product.price}</td>
                   <td style={styles.td}>
                     <span
                       style={{
-                        ...styles.roleBadge,
-                        backgroundColor: user.role === 'super_admin' 
-                          ? colors.primary 
-                          : user.role === 'admin' 
-                          ? colors.info 
-                          : colors.background,
-                        color: user.role === 'super_admin' || user.role === 'admin'
-                          ? colors.surface
-                          : colors.textPrimary,
+                        ...styles.stockBadge,
+                        backgroundColor: product.stock > 10 ? colors.successLight : product.stock > 0 ? colors.warningLight : colors.errorLight,
+                        color: product.stock > 10 ? colors.success : product.stock > 0 ? colors.warning : colors.error,
                       }}
                     >
-                      {user.role === 'super_admin' ? 'Super Admin' : user.role === 'admin' ? 'Admin' : 'User'}
+                      {product.stock}
                     </span>
                   </td>
                   <td style={styles.td}>
                     <span
                       style={{
                         ...styles.badge,
-                        backgroundColor: user.isBlocked ? colors.errorLight : colors.successLight,
-                        color: user.isBlocked ? colors.error : colors.success,
+                        backgroundColor: product.isActive ? colors.successLight : colors.errorLight,
+                        color: product.isActive ? colors.success : colors.error,
                       }}
                     >
-                      {user.isBlocked ? 'Blocked' : 'Active'}
+                      {product.isActive ? 'Active' : 'Inactive'}
                     </span>
                   </td>
-                  <td style={styles.td}>{new Date(user.createdAt).toLocaleDateString()}</td>
                   <td style={styles.td}>
-                    {user.role !== 'super_admin' && (
-                      <button
-                        onClick={() => handleToggleBlock(user._id)}
-                        style={{
-                          ...styles.button,
-                          backgroundColor: user.isBlocked ? colors.success : colors.error,
-                        }}
-                      >
-                        {user.isBlocked ? 'Unblock' : 'Block'}
-                      </button>
-                    )}
-                    {user.role === 'super_admin' && (
-                      <span style={styles.protectedText}>Protected</span>
-                    )}
+                    <button
+                      onClick={() => handleToggleStatus(product._id, product.isActive)}
+                      style={{
+                        ...styles.actionButton,
+                        backgroundColor: product.isActive ? colors.warning : colors.success,
+                      }}
+                      title={product.isActive ? 'Hide Product' : 'Show Product'}
+                    >
+                      {product.isActive ? <MdVisibilityOff size={18} /> : <MdVisibility size={18} />}
+                    </button>
                   </td>
                 </tr>
               ))}
@@ -159,14 +122,14 @@ const Users = () => {
           </table>
         </div>
 
-        {users.length === 0 && (
+        {products.length === 0 && (
           <div style={styles.emptyState}>
-            <p>No {roleFilter === 'users' ? 'users' : 'admins'} found.</p>
+            <p>No products found.</p>
           </div>
         )}
 
         {/* Pagination */}
-        {users.length > 0 && (
+        {products.length > 0 && (
           <div style={styles.pagination}>
             <button
               onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
@@ -226,31 +189,6 @@ const styles = {
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
-  filterButtons: {
-    display: 'flex',
-    gap: spacing.xs,
-    backgroundColor: colors.background,
-    padding: '4px',
-    borderRadius: '8px',
-  },
-  filterButton: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacing.xs,
-    padding: '8px 16px',
-    backgroundColor: 'transparent',
-    color: colors.textSecondary,
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'all 0.2s',
-  },
-  filterButtonActive: {
-    backgroundColor: colors.primary,
-    color: colors.surface,
-  },
   card: {
     backgroundColor: colors.surface,
     borderRadius: '12px',
@@ -284,6 +222,23 @@ const styles = {
     fontSize: '14px',
     color: colors.textSecondary,
   },
+  productImage: {
+    width: '50px',
+    height: '50px',
+    objectFit: 'cover',
+    borderRadius: '6px',
+  },
+  noImage: {
+    width: '50px',
+    height: '50px',
+    backgroundColor: colors.background,
+    borderRadius: '6px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '10px',
+    color: colors.textLight,
+  },
   badge: {
     padding: '4px 12px',
     borderRadius: '12px',
@@ -291,27 +246,22 @@ const styles = {
     fontWeight: '600',
     display: 'inline-block',
   },
-  roleBadge: {
+  stockBadge: {
     padding: '4px 12px',
     borderRadius: '12px',
     fontSize: '12px',
     fontWeight: '600',
     display: 'inline-block',
   },
-  button: {
-    padding: '6px 16px',
+  actionButton: {
+    padding: '6px 10px',
     border: 'none',
     borderRadius: '6px',
-    fontSize: '13px',
-    fontWeight: '600',
     color: colors.surface,
     cursor: 'pointer',
-    transition: 'opacity 0.2s',
-  },
-  protectedText: {
-    fontSize: '12px',
-    color: colors.textLight,
-    fontStyle: 'italic',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   emptyState: {
     padding: spacing.xl,
@@ -345,4 +295,4 @@ const styles = {
   },
 };
 
-export default Users;
+export default AdminProducts;

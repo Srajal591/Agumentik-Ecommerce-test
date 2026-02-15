@@ -29,7 +29,9 @@ const Navbar = ({ onMenuClick }) => {
             <MdAccountCircle size={32} style={styles.userIcon} />
             <div style={styles.userDetails} className="user-details">
               <div style={styles.userName}>{user?.name || 'Admin'}</div>
-              <div style={styles.userRole}>Administrator</div>
+              <div style={styles.userRole}>
+                {user?.role === 'super_admin' ? 'Super Administrator' : 'Administrator'}
+              </div>
             </div>
           </div>
         </div>

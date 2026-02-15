@@ -8,21 +8,21 @@ const { paginate } = require('../middleware/pagination');
 router.get('/', paginate, productController.getAllProducts);
 router.get('/:id', productController.getProductById);
 
-// Admin routes
-router.post('/', authenticate, authorize('admin'), productController.createProduct);
-router.put('/:id', authenticate, authorize('admin'), productController.updateProduct);
+// Admin routes (both admin and super_admin)
+router.post('/', authenticate, authorize('admin', 'super_admin'), productController.createProduct);
+router.put('/:id', authenticate, authorize('admin', 'super_admin'), productController.updateProduct);
 router.patch(
   '/:id/status',
   authenticate,
-  authorize('admin'),
+  authorize('admin', 'super_admin'),
   productController.updateProductStatus
 );
 router.patch(
   '/:id/inventory',
   authenticate,
-  authorize('admin'),
+  authorize('admin', 'super_admin'),
   productController.updateInventory
 );
-router.delete('/:id', authenticate, authorize('admin'), productController.deleteProduct);
+router.delete('/:id', authenticate, authorize('admin', 'super_admin'), productController.deleteProduct);
 
 module.exports = router;

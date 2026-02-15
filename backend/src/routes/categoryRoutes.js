@@ -7,15 +7,15 @@ const { authenticate, authorize, optionalAuthenticate } = require('../middleware
 router.get('/', optionalAuthenticate, categoryController.getAllCategories);
 router.get('/:id', categoryController.getCategoryById);
 
-// Admin routes
-router.post('/', authenticate, authorize('admin'), categoryController.createCategory);
-router.put('/:id', authenticate, authorize('admin'), categoryController.updateCategory);
+// Admin routes (both admin and super_admin can access)
+router.post('/', authenticate, authorize('admin', 'super_admin'), categoryController.createCategory);
+router.put('/:id', authenticate, authorize('admin', 'super_admin'), categoryController.updateCategory);
 router.patch(
   '/:id/toggle-status',
   authenticate,
-  authorize('admin'),
+  authorize('admin', 'super_admin'),
   categoryController.toggleCategoryStatus
 );
-router.delete('/:id', authenticate, authorize('admin'), categoryController.deleteCategory);
+router.delete('/:id', authenticate, authorize('admin', 'super_admin'), categoryController.deleteCategory);
 
 module.exports = router;

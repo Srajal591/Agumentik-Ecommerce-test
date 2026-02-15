@@ -4,11 +4,11 @@ const userController = require('../controllers/userController');
 const { authenticate, authorize } = require('../middleware/auth');
 const { paginate } = require('../middleware/pagination');
 
-// Admin routes
-router.get('/', authenticate, authorize('admin'), paginate, userController.getAllUsers);
-router.get('/:id', authenticate, authorize('admin'), userController.getUserById);
-router.put('/:id', authenticate, authorize('admin'), userController.updateProfile);
-router.patch('/:id/toggle-block', authenticate, authorize('admin'), userController.toggleBlockUser);
+// Admin routes (both admin and super_admin)
+router.get('/', authenticate, authorize('admin', 'super_admin'), paginate, userController.getAllUsers);
+router.get('/:id', authenticate, authorize('admin', 'super_admin'), userController.getUserById);
+router.put('/:id', authenticate, authorize('admin', 'super_admin'), userController.updateProfile);
+router.patch('/:id/toggle-block', authenticate, authorize('admin', 'super_admin'), userController.toggleBlockUser);
 
 // User routes
 router.put('/profile/update', authenticate, userController.updateProfile);

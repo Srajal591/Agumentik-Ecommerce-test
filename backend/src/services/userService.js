@@ -1,15 +1,33 @@
 const User = require('../models/User');
 
 class UserService {
-  // Get all users with pagination
-  async getAllUsers(page, limit, skip) {
-    const users = await User.find({ role: 'user', isDeleted: false })
-      .select('-password')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit);
+  // Get all users with pagination and role filter
+  async getAllUsers(page, limit, skip, role = null) {
+    // Build query
+    const query = { isDeleted: false };
+    
+    // Add role filter if provided
+    if (role) {
+      if (role === 'users') {
+        query.role = 'user';
+      } else if (role === 'admins') {
+        query.role = { $in: ['admin', 'super_admin'] };
+      }
+    } else {
+      // Default: only show regular users
+      query.role = 'user';
+    }
 
-    const total = await User.countDocuments({ role: 'user', isDeleted: false });
+    // Execute query with pagination
+    const [users, total] = await Promise.all([
+      User.find(query)
+        .select('-password')
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      User.countDocuments(query)
+    ]);
 
     return {
       users,
@@ -24,7 +42,9 @@ class UserService {
 
   // Get user by ID
   async getUserById(userId) {
-    const user = await User.findOne({ _id: userId, isDeleted: false }).select('-password');
+    const user = await User.findOne({ _id: userId, isDeleted: false })
+      .select('-password')
+      .lean();
 
     if (!user) {
       throw new Error('User not found');
@@ -35,10 +55,17 @@ class UserService {
 
   // Update user profile
   async updateProfile(userId, updateData) {
-    const user = await User.findByIdAndUpdate(userId, updateData, {
-      new: true,
-      runValidators: true,
-    }).select('-password');
+    // Prevent role and sensitive field updates
+    const { role, password, isDeleted, ...safeUpdateData } = updateData;
+
+    const user = await User.findOneAndUpdate(
+      { _id: userId, isDeleted: false },
+      safeUpdateData,
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).select('-password');
 
     if (!user) {
       throw new Error('User not found');
@@ -49,21 +76,29 @@ class UserService {
 
   // Block/Unblock user
   async toggleBlockUser(userId) {
-    const user = await User.findById(userId);
+    const user = await User.findOne({ _id: userId, isDeleted: false });
 
     if (!user) {
       throw new Error('User not found');
     }
 
+    // Prevent blocking super_admin
+    if (user.role === 'super_admin') {
+      throw new Error('Cannot block super admin');
+    }
+
     user.isBlocked = !user.isBlocked;
     await user.save();
 
-    return user;
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    return userResponse;
   }
 
   // Add address
   async addAddress(userId, addressData) {
-    const user = await User.findById(userId);
+    const user = await User.findOne({ _id: userId, isDeleted: false });
 
     if (!user) {
       throw new Error('User not found');
@@ -78,12 +113,12 @@ class UserService {
     user.addresses.push(addressData);
     await user.save();
 
-    return user;
+    return user.addresses;
   }
 
   // Update address
   async updateAddress(userId, addressId, addressData) {
-    const user = await User.findById(userId);
+    const user = await User.findOne({ _id: userId, isDeleted: false });
 
     if (!user) {
       throw new Error('User not found');
@@ -105,26 +140,31 @@ class UserService {
     }
 
     await user.save();
-    return user;
+    return user.addresses;
   }
 
   // Delete address
   async deleteAddress(userId, addressId) {
-    const user = await User.findById(userId);
+    const user = await User.findOne({ _id: userId, isDeleted: false });
 
     if (!user) {
       throw new Error('User not found');
     }
 
+    const address = user.addresses.id(addressId);
+    if (!address) {
+      throw new Error('Address not found');
+    }
+
     user.addresses.pull(addressId);
     await user.save();
 
-    return user;
+    return user.addresses;
   }
 
   // Manage wishlist
   async toggleWishlist(userId, productId) {
-    const user = await User.findById(userId);
+    const user = await User.findOne({ _id: userId, isDeleted: false });
 
     if (!user) {
       throw new Error('User not found');
@@ -139,18 +179,24 @@ class UserService {
     }
 
     await user.save();
-    return user;
+    return user.wishlist;
   }
 
   // Get wishlist
   async getWishlist(userId) {
-    const user = await User.findById(userId).populate('wishlist');
+    const user = await User.findOne({ _id: userId, isDeleted: false })
+      .populate({
+        path: 'wishlist',
+        match: { isDeleted: false, isActive: true },
+        select: 'name price images category stock'
+      })
+      .lean();
 
     if (!user) {
       throw new Error('User not found');
     }
 
-    return user.wishlist;
+    return user.wishlist || [];
   }
 }
 

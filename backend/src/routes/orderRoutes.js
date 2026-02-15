@@ -10,8 +10,8 @@ router.get('/my-orders', authenticate, paginate, orderController.getUserOrders);
 router.get('/:id', authenticate, orderController.getOrderById);
 router.patch('/:id/payment', authenticate, orderController.updatePaymentStatus);
 
-// Admin routes
-router.get('/', authenticate, authorize('admin'), paginate, orderController.getAllOrders);
-router.patch('/:id/status', authenticate, authorize('admin'), orderController.updateOrderStatus);
+// Admin routes (both admin and super_admin)
+router.get('/', authenticate, authorize('admin', 'super_admin'), paginate, orderController.getAllOrders);
+router.patch('/:id/status', authenticate, authorize('admin', 'super_admin'), orderController.updateOrderStatus);
 
 module.exports = router;

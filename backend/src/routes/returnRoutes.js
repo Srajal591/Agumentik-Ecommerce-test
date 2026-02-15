@@ -9,7 +9,7 @@ router.post('/', authenticate, returnController.createReturn);
 router.get('/', authenticate, paginate, returnController.getAllReturns);
 router.get('/:id', authenticate, returnController.getReturnById);
 
-// Admin routes
-router.patch('/:id/status', authenticate, authorize('admin'), returnController.updateReturnStatus);
+// Admin routes (both admin and super_admin)
+router.patch('/:id/status', authenticate, authorize('admin', 'super_admin'), returnController.updateReturnStatus);
 
 module.exports = router;

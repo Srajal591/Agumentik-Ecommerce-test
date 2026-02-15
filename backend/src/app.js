@@ -14,6 +14,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const ticketRoutes = require('./routes/ticketRoutes');
 const returnRoutes = require('./routes/returnRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const adminManagementRoutes = require('./routes/adminManagementRoutes');
 
 const app = express();
 
@@ -56,6 +57,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/tickets', ticketRoutes);
 app.use('/api/returns', returnRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/admin-management', adminManagementRoutes);
 
 // 404 handler
 app.use((req, res) => {

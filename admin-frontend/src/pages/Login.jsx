@@ -20,7 +20,16 @@ const Login = ({ setIsAuthenticated }) => {
       const response = await authService.login(email, password);
       if (response.success) {
         setIsAuthenticated(true);
-        navigate('/dashboard');
+        
+        // Get user role and redirect accordingly
+        const user = authService.getStoredUser();
+        if (user?.role === 'super_admin') {
+          navigate('/super-admin/dashboard', { replace: true });
+        } else if (user?.role === 'admin') {
+          navigate('/admin/dashboard', { replace: true });
+        } else {
+          navigate('/login');
+        }
       }
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.');
