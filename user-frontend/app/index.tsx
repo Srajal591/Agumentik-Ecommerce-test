@@ -1,8 +1,8 @@
 import { Redirect } from 'expo-router';
 import { useEffect, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { View, ActivityIndicator } from 'react-native';
 import { colors } from '../src/theme/colors';
+import { authService } from '../src/api/authService';
 
 export default function Index() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -13,8 +13,8 @@ export default function Index() {
 
   const checkAuth = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
-      setIsAuthenticated(!!token);
+      const isLoggedIn = await authService.isLoggedIn();
+      setIsAuthenticated(isLoggedIn);
     } catch (error) {
       setIsAuthenticated(false);
     }

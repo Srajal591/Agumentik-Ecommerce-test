@@ -2,43 +2,40 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
+  StyleSheet,
   FlatList,
   Image,
   TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
-  TextInput,
   RefreshControl,
-  ScrollView,
   Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
 import { productService } from '../../src/api/productService';
 import { categoryService } from '../../src/api/categoryService';
-import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
 import { toggleWishlist, isInWishlist } from '../../src/utils/wishlistStorage';
 
-export default function CategoriesScreen() {
+export default function CategoryProductsScreen() {
+  const { id, name } = useLocalSearchParams();
   const router = useRouter();
   const [products, setProducts] = useState([]);
-  const [categories, setCategories] = useState([]);
+  const [category, setCategory] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchData();
-    loadWishlistStatus();
-  }, []);
+  }, [id]);
 
   useEffect(() => {
-    if (!loading) {
-      fetchProducts();
+    if (products.length > 0) {
+      loadWishlistStatus();
     }
-  }, [selectedCategory, searchQuery]);
+  }, [products]);
 
   const loadWishlistStatus = async () => {
     try {
@@ -80,7 +77,7 @@ export default function CategoriesScreen() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      await Promise.all([fetchCategories(), fetchProducts()]);
+      await Promise.all([fetchCategory(), fetchProducts()]);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
@@ -88,24 +85,20 @@ export default function CategoriesScreen() {
     }
   };
 
-  const fetchCategories = async () => {
+  const fetchCategory = async () => {
     try {
-      const response = await categoryService.getCategories();
+      const response = await categoryService.getCategoryById(id as string);
       if (response.success) {
-        setCategories(response.data);
+        setCategory(response.data);
       }
     } catch (error) {
-      console.error('Error fetching categories:', error);
+      console.error('Error fetching category:', error);
     }
   };
 
   const fetchProducts = async () => {
     try {
-      const params: any = {};
-      if (selectedCategory) params.category = selectedCategory;
-      if (searchQuery) params.search = searchQuery;
-
-      const response = await productService.getProducts(params);
+      const response = await productService.getProducts({ category: id });
       if (response.success) {
         setProducts(response.data.products);
       }
@@ -118,43 +111,6 @@ export default function CategoriesScreen() {
     setRefreshing(true);
     await fetchData();
     setRefreshing(false);
-  };
-
-  const renderCategorySection = () => {
-    if (categories.length === 0) return null;
-
-    return (
-      <View style={styles.categoriesSection}>
-        <Text style={styles.sectionTitle}>Shop by Category</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.categoriesScroll}
-        >
-          <TouchableOpacity
-            style={[styles.categoryChip, !selectedCategory && styles.categoryChipActive]}
-            onPress={() => setSelectedCategory('')}
-          >
-            <Text style={[styles.categoryText, !selectedCategory && styles.categoryTextActive]}>
-              All
-            </Text>
-          </TouchableOpacity>
-          {categories.map((item: any) => (
-            <TouchableOpacity
-              key={item._id}
-              style={[styles.categoryChip, selectedCategory === item._id && styles.categoryChipActive]}
-              onPress={() => setSelectedCategory(selectedCategory === item._id ? '' : item._id)}
-            >
-              <Text
-                style={[styles.categoryText, selectedCategory === item._id && styles.categoryTextActive]}
-              >
-                {item.name}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </ScrollView>
-      </View>
-    );
   };
 
   const renderProduct = ({ item }: any) => {
@@ -173,7 +129,9 @@ export default function CategoriesScreen() {
       >
         <View style={styles.imageContainer}>
           <Image
-            source={{ uri: item.images?.[0] || 'https://via.placeholder.com/150' }}
+            source={{
+              uri: item.images?.[0] || 'https://via.placeholder.com/300x400/704F38/FFFFFF?text=Product',
+            }}
             style={styles.productImage}
           />
           {hasDiscount && (
@@ -193,6 +151,7 @@ export default function CategoriesScreen() {
             />
           </TouchableOpacity>
         </View>
+
         <View style={styles.productInfo}>
           <Text style={styles.productName} numberOfLines={2}>
             {item.name}
@@ -220,36 +179,49 @@ export default function CategoriesScreen() {
 
   if (loading) {
     return (
-      <View style={styles.centered}>
-        <ActivityIndicator size="large" color={colors.primary} />
-        <Text style={styles.loadingText}>Loading products...</Text>
-      </View>
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>{name || 'Products'}</Text>
+          <View style={styles.headerRight} />
+        </View>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading products...</Text>
+        </View>
+      </SafeAreaView>
     );
   }
 
   return (
-    <View style={styles.container}>
-      {/* Search Bar */}
-      <View style={styles.searchContainer}>
-        <View style={styles.searchInputContainer}>
-          <Ionicons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search products..."
-            placeholderTextColor={colors.textLight}
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          {searchQuery.length > 0 && (
-            <TouchableOpacity onPress={() => setSearchQuery('')}>
-              <Ionicons name="close-circle" size={20} color={colors.textSecondary} />
-            </TouchableOpacity>
-          )}
-        </View>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      {/* Header */}
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+          <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{category?.name || name || 'Products'}</Text>
+        <TouchableOpacity style={styles.headerRight}>
+          <Ionicons name="search" size={24} color={colors.textPrimary} />
+        </TouchableOpacity>
       </View>
 
-      {/* Categories */}
-      {renderCategorySection()}
+      {/* Category Banner */}
+      {category?.image && (
+        <View style={styles.categoryBanner}>
+          <Image source={{ uri: category.image }} style={styles.categoryImage} />
+          <View style={styles.categoryOverlay}>
+            <Text style={styles.categoryTitle}>{category.name}</Text>
+            {category.description && (
+              <Text style={styles.categoryDescription} numberOfLines={2}>
+                {category.description}
+              </Text>
+            )}
+          </View>
+        </View>
+      )}
 
       {/* Products Count */}
       <View style={styles.countContainer}>
@@ -272,14 +244,14 @@ export default function CategoriesScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />}
         ListEmptyComponent={
-          <View style={styles.emptyState}>
+          <View style={styles.emptyContainer}>
             <Ionicons name="shirt-outline" size={64} color={colors.textLight} />
             <Text style={styles.emptyText}>No products found</Text>
-            <Text style={styles.emptySubtext}>Try adjusting your filters</Text>
+            <Text style={styles.emptySubtext}>Check back later for new arrivals</Text>
           </View>
         }
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -288,74 +260,64 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  centered: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: colors.background,
-  },
-  loadingText: {
-    marginTop: spacing.md,
-    fontSize: 14,
-    color: colors.textSecondary,
-  },
-  searchContainer: {
-    padding: spacing.md,
-    backgroundColor: colors.surface,
-    ...shadows.small,
-  },
-  searchInputContainer: {
+  header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.background,
-    borderRadius: borderRadius.lg,
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
-    height: 48,
-  },
-  searchIcon: {
-    marginRight: spacing.sm,
-  },
-  searchInput: {
-    flex: 1,
-    fontSize: 15,
-    color: colors.textPrimary,
-  },
-  categoriesSection: {
-    backgroundColor: colors.surface,
     paddingVertical: spacing.md,
+    backgroundColor: colors.surface,
     ...shadows.small,
   },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    paddingHorizontal: spacing.md,
-    marginBottom: spacing.sm,
-  },
-  categoriesScroll: {
-    paddingHorizontal: spacing.md,
-    gap: spacing.sm,
-  },
-  categoryChip: {
-    paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.xl,
+  backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: colors.background,
-    marginRight: spacing.sm,
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  categoryChipActive: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary,
-  },
-  categoryText: {
-    fontSize: 14,
-    fontWeight: '600',
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
     color: colors.textPrimary,
+    flex: 1,
+    textAlign: 'center',
   },
-  categoryTextActive: {
+  headerRight: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  categoryBanner: {
+    height: 180,
+    position: 'relative',
+  },
+  categoryImage: {
+    width: '100%',
+    height: '100%',
+  },
+  categoryOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: spacing.lg,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+  },
+  categoryTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
     color: colors.surface,
+    marginBottom: 4,
+  },
+  categoryDescription: {
+    fontSize: 14,
+    color: colors.surface,
+    opacity: 0.9,
   },
   countContainer: {
     flexDirection: 'row',
@@ -481,7 +443,17 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
     textDecorationLine: 'line-through',
   },
-  emptyState: {
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: spacing.md,
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',

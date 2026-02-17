@@ -53,6 +53,9 @@ const AdminProducts = () => {
     <div style={styles.container}>
       <div style={styles.header}>
         <h1 style={styles.title}>Products Management</h1>
+        <button onClick={() => window.location.href = '/add-product'} style={styles.addButton}>
+          <MdAdd size={20} /> Add Product
+        </button>
       </div>
 
       <div style={styles.card}>
@@ -188,6 +191,19 @@ const styles = {
     fontSize: '28px',
     fontWeight: 'bold',
     color: colors.textPrimary,
+  },
+  addButton: {
+    padding: '12px 24px',
+    backgroundColor: colors.primary,
+    color: colors.surface,
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
   },
   card: {
     backgroundColor: colors.surface,

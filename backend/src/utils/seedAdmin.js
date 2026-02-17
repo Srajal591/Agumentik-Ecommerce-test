@@ -15,11 +15,11 @@ const seedAdmin = async () => {
     }
 
     const admin = await User.create({
-      name: 'Admin',
+      name: 'Super_Admin',
       email: process.env.ADMIN_EMAIL || 'admin@fashionstore.com',
       password: process.env.ADMIN_PASSWORD || 'Admin@123',
       mobile: '9999999999',
-      role: 'admin',
+      role: 'super_admin',
     });
 
     console.log('✅ Admin user created successfully');

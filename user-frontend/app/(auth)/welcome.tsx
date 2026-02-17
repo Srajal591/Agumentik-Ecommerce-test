@@ -1,139 +1,139 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Dimensions,
+} from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
+
+const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
   const router = useRouter();
 
   return (
-    <View style={styles.container}>
-      <View style={styles.content}>
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <View style={styles.logoCircle}>
-            <Ionicons name="shirt" size={60} color={colors.surface} />
+    <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
+      <View style={styles.gradient}>
+        {/* Logo/Brand Section */}
+        <View style={styles.logoSection}>
+          <View style={styles.logoContainer}>
+            <Text style={styles.logoText}>👕</Text>
           </View>
-          <Text style={styles.appName}>Fashion Store</Text>
-          <Text style={styles.tagline}>Your Premium Fashion Destination</Text>
+          <Text style={styles.brandName}>Fashion Store</Text>
+          <Text style={styles.tagline}>Your Style, Your Way</Text>
         </View>
 
-        {/* Features */}
-        <View style={styles.features}>
-          <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
-            <Text style={styles.featureText}>Latest Fashion Trends</Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
-            <Text style={styles.featureText}>Secure Shopping</Text>
-          </View>
-          <View style={styles.featureItem}>
-            <Ionicons name="checkmark-circle" size={24} color={colors.primary} />
-            <Text style={styles.featureText}>Fast Delivery</Text>
-          </View>
+        {/* Illustration */}
+        <View style={styles.illustrationContainer}>
+          <Image
+            source={{ uri: 'https://via.placeholder.com/300x300/FFFFFF/704F38?text=Fashion' }}
+            style={styles.illustration}
+            resizeMode="contain"
+          />
+        </View>
+
+        {/* Action Buttons */}
+        <View style={styles.actionSection}>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => router.push('/(auth)/register')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.primaryButtonText}>Get Started</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => router.push('/(auth)/login')}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.secondaryButtonText}>I Already Have an Account</Text>
+          </TouchableOpacity>
         </View>
       </View>
-
-      {/* Buttons */}
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.primaryButton}
-          onPress={() => router.push('/(auth)/register')}>
-          <Text style={styles.primaryButtonText}>Get Started</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.secondaryButton}
-          onPress={() => router.push('/(auth)/login')}>
-          <Text style={styles.secondaryButtonText}>I Already Have an Account</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: colors.background,
   },
-  content: {
+  gradient: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     paddingHorizontal: spacing.xl,
+    backgroundColor: colors.primary,
+  },
+  logoSection: {
+    alignItems: 'center',
+    marginTop: height * 0.08,
   },
   logoContainer: {
-    alignItems: 'center',
-    marginBottom: spacing.xxl,
-  },
-  logoCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.primary,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: spacing.lg,
     ...shadows.large,
   },
-  appName: {
+  logoText: {
+    fontSize: 50,
+  },
+  brandName: {
     fontSize: 32,
     fontWeight: 'bold',
-    color: colors.textPrimary,
+    color: colors.surface,
     marginBottom: spacing.xs,
   },
   tagline: {
     fontSize: 16,
-    color: colors.textSecondary,
-    textAlign: 'center',
+    color: colors.surface,
+    opacity: 0.9,
   },
-  features: {
-    width: '100%',
-    marginTop: spacing.xl,
-  },
-  featureItem: {
-    flexDirection: 'row',
+  illustrationContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: spacing.md,
-    paddingHorizontal: spacing.lg,
+    marginVertical: spacing.xl,
   },
-  featureText: {
-    fontSize: 16,
-    color: colors.textPrimary,
-    marginLeft: spacing.md,
-    fontWeight: '500',
+  illustration: {
+    width: width * 0.7,
+    height: width * 0.7,
   },
-  buttonContainer: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
+  actionSection: {
+    marginBottom: spacing.xl,
+    gap: spacing.md,
   },
   primaryButton: {
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
+    backgroundColor: colors.surface,
+    paddingVertical: spacing.lg,
+    borderRadius: borderRadius.xl,
     alignItems: 'center',
-    marginBottom: spacing.md,
     ...shadows.medium,
   },
   primaryButtonText: {
-    color: colors.surface,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
+    color: colors.primary,
   },
   secondaryButton: {
     backgroundColor: 'transparent',
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
+    paddingVertical: spacing.lg,
+    borderRadius: borderRadius.xl,
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: colors.primary,
+    borderColor: colors.surface,
   },
   secondaryButtonText: {
-    color: colors.primary,
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    color: colors.surface,
   },
 });

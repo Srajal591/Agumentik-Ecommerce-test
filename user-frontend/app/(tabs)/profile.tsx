@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -16,6 +17,24 @@ import { authService } from '../../src/api/authService';
 
 export default function ProfileScreen() {
   const router = useRouter();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  const loadUserData = async () => {
+    try {
+      setLoading(true);
+      const storedUser = await authService.getStoredUser();
+      setUser(storedUser);
+    } catch (error) {
+      console.error('Error loading user data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     Alert.alert(
@@ -97,24 +116,30 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}>
-        {/* Profile Card */}
-        <View style={styles.profileCard}>
-          <View style={styles.avatarContainer}>
-            <Image
-              source={{ uri: 'https://via.placeholder.com/100/704F38/FFFFFF?text=User' }}
-              style={styles.avatar}
-            />
-            <TouchableOpacity style={styles.editAvatarBtn}>
-              <Ionicons name="camera" size={16} color={colors.surface} />
-            </TouchableOpacity>
-          </View>
-          <Text style={styles.userName}>John Doe</Text>
-          <Text style={styles.userEmail}>john.doe@example.com</Text>
-          <Text style={styles.userPhone}>+91 98765 43210</Text>
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading profile...</Text>
         </View>
+      ) : (
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}>
+          {/* Profile Card */}
+          <View style={styles.profileCard}>
+            <View style={styles.avatarContainer}>
+              <Image
+                source={{ uri: 'https://via.placeholder.com/100/704F38/FFFFFF?text=' + (user?.name?.charAt(0) || 'U') }}
+                style={styles.avatar}
+              />
+              <TouchableOpacity style={styles.editAvatarBtn}>
+                <Ionicons name="camera" size={16} color={colors.surface} />
+              </TouchableOpacity>
+            </View>
+            <Text style={styles.userName}>{user?.name || 'User'}</Text>
+            <Text style={styles.userEmail}>{user?.email || 'No email'}</Text>
+            <Text style={styles.userPhone}>{user?.mobile || 'No mobile'}</Text>
+          </View>
 
         {/* Stats */}
         <View style={styles.statsContainer}>
@@ -156,7 +181,8 @@ export default function ProfileScreen() {
         <View style={styles.footer}>
           <Text style={styles.footerText}>Version 1.0.0</Text>
         </View>
-      </ScrollView>
+        </ScrollView>
+      )}
     </SafeAreaView>
   );
 }
@@ -315,5 +341,15 @@ const styles = StyleSheet.create({
   footerText: {
     fontSize: 12,
     color: colors.textLight,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: spacing.md,
+    fontSize: 14,
+    color: colors.textSecondary,
   },
 });

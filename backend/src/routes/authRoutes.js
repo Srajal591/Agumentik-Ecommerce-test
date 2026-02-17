@@ -17,6 +17,9 @@ router.post('/admin/login', authLimiter, authController.adminLogin);
 // User registration
 router.post('/user/register', authLimiter, authController.registerUser);
 
+// User login with password
+router.post('/user/login', authLimiter, authController.userLogin);
+
 // User OTP login (Mobile)
 router.post('/user/send-otp', authLimiter, authController.sendOTP);
 router.post('/user/verify-otp', authLimiter, authController.verifyOTP);
@@ -25,8 +28,8 @@ router.post('/user/verify-otp', authLimiter, authController.verifyOTP);
 router.post('/user/send-email-otp', authLimiter, authController.sendEmailOTP);
 router.post('/user/verify-email-otp', authLimiter, authController.verifyEmailOTP);
 
-// Logout
-router.post('/logout', authenticate, authController.logout);
+// Logout (no authentication required - should work even with expired token)
+router.post('/logout', authController.logout);
 
 // Get current user
 router.get('/me', authenticate, authController.getCurrentUser);

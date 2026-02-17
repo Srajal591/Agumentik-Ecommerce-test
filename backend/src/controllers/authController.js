@@ -86,7 +86,7 @@ exports.getCurrentUser = async (req, res, next) => {
 // Register user
 exports.registerUser = async (req, res, next) => {
   try {
-    const { name, email, mobile } = req.body;
+    const { name, email, mobile, password } = req.body;
 
     if (!name || !email || !mobile) {
       return res.status(400).json({
@@ -95,11 +95,35 @@ exports.registerUser = async (req, res, next) => {
       });
     }
 
-    const result = await authService.registerUser({ name, email, mobile });
+    const result = await authService.registerUser({ name, email, mobile, password });
 
     res.status(201).json({
       success: true,
       message: 'Registration successful',
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// User login with password
+exports.userLogin = async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required',
+      });
+    }
+
+    const result = await authService.userLogin(email, password);
+
+    res.status(200).json({
+      success: true,
+      message: 'Login successful',
       data: result,
     });
   } catch (error) {

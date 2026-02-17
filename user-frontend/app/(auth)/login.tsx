@@ -3,14 +3,16 @@ import {
   View,
   Text,
   StyleSheet,
-  TouchableOpacity,
   TextInput,
-  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
   KeyboardAvoidingView,
   Platform,
-  Alert,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
 import { authService } from '../../src/api/authService';
@@ -18,76 +20,77 @@ import { authService } from '../../src/api/authService';
 export default function LoginScreen() {
   const router = useRouter();
   const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSendOTP = async () => {
-    if (!email) {
+  const handleLogin = async () => {
+    // Validation
+    if (!email.trim()) {
       Alert.alert('Error', 'Please enter your email');
       return;
     }
 
-    // Validate email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       Alert.alert('Error', 'Please enter a valid email');
       return;
     }
 
-    setLoading(true);
+    if (!password) {
+      Alert.alert('Error', 'Please enter your password');
+      return;
+    }
+
     try {
-      const response = await authService.sendEmailOTP(email);
-      
+      setLoading(true);
+      const response = await authService.login(email.trim(), password);
+
       if (response.success) {
-        Alert.alert('Success', 'OTP sent to your email!', [
+        Alert.alert('Success', 'Login successful!', [
           {
             text: 'OK',
-            onPress: () => router.push({
-              pathname: '/(auth)/otp',
-              params: { email }
-            }),
+            onPress: () => router.replace('/(tabs)'),
           },
         ]);
       }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Failed to send OTP');
+      Alert.alert('Error', error.message || 'Login failed');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Login</Text>
-        </View>
-
-        {/* Logo */}
-        <View style={styles.logoContainer}>
-          <View style={styles.logoCircle}>
-            <Ionicons name="mail" size={40} color={colors.surface} />
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
+        >
+          {/* Header */}
+          <View style={styles.header}>
+            <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+              <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Sign In</Text>
+            <View style={styles.headerRight} />
           </View>
-          <Text style={styles.title}>Welcome Back</Text>
-          <Text style={styles.subtitle}>Login with your email to continue</Text>
-        </View>
 
-        {/* Form */}
-        <View style={styles.form}>
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>Email Address</Text>
-            <View style={styles.inputWrapper}>
+          {/* Form */}
+          <View style={styles.form}>
+            <Text style={styles.title}>Welcome Back</Text>
+            <Text style={styles.subtitle}>Sign in to continue shopping</Text>
+
+            {/* Email Input */}
+            <View style={styles.inputContainer}>
               <Ionicons name="mail-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
               <TextInput
                 style={styles.input}
-                placeholder="Enter your email"
+                placeholder="Email"
                 placeholderTextColor={colors.textLight}
                 value={email}
                 onChangeText={setEmail}
@@ -95,34 +98,58 @@ export default function LoginScreen() {
                 autoCapitalize="none"
               />
             </View>
-          </View>
 
-          <TouchableOpacity
-            style={[styles.sendButton, loading && styles.buttonDisabled]}
-            onPress={handleSendOTP}
-            disabled={loading}>
-            <Ionicons name="send" size={20} color={colors.surface} />
-            <Text style={styles.sendButtonText}>
-              {loading ? 'Sending OTP...' : 'Send OTP'}
-            </Text>
-          </TouchableOpacity>
+            {/* Password Input */}
+            <View style={styles.inputContainer}>
+              <Ionicons name="lock-closed-outline" size={20} color={colors.textSecondary} style={styles.inputIcon} />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                placeholderTextColor={colors.textLight}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry={!showPassword}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                <Ionicons
+                  name={showPassword ? 'eye-outline' : 'eye-off-outline'}
+                  size={20}
+                  color={colors.textSecondary}
+                />
+              </TouchableOpacity>
+            </View>
 
-          <View style={styles.infoBox}>
-            <Ionicons name="information-circle" size={20} color={colors.info} />
-            <Text style={styles.infoText}>
-              We'll send a 6-digit OTP to your email for verification
-            </Text>
-          </View>
-
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>Don't have an account? </Text>
-            <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
-              <Text style={styles.footerLink}>Register</Text>
+            {/* Forgot Password */}
+            <TouchableOpacity style={styles.forgotPassword}>
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
+
+            {/* Login Button */}
+            <TouchableOpacity
+              style={[styles.loginButton, loading && styles.loginButtonDisabled]}
+              onPress={handleLogin}
+              disabled={loading}
+              activeOpacity={0.8}
+            >
+              {loading ? (
+                <ActivityIndicator color={colors.surface} />
+              ) : (
+                <Text style={styles.loginButtonText}>Sign In</Text>
+              )}
+            </TouchableOpacity>
+
+            {/* Register Link */}
+            <View style={styles.registerLink}>
+              <Text style={styles.registerLinkText}>Don't have an account? </Text>
+              <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
+                <Text style={styles.registerLinkButton}>Sign Up</Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -131,67 +158,61 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     paddingHorizontal: spacing.md,
-    paddingTop: 50,
-    paddingBottom: spacing.md,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.surface,
+    ...shadows.small,
   },
   backButton: {
-    marginRight: spacing.md,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 20,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
-  logoContainer: {
-    alignItems: 'center',
-    paddingVertical: spacing.xl,
+  headerRight: {
+    width: 40,
   },
-  logoCircle: {
-    width: 80,
-    height: 80,
-    borderRadius: borderRadius.full,
-    backgroundColor: colors.primary,
+  form: {
+    flex: 1,
+    padding: spacing.xl,
     justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: spacing.md,
-    ...shadows.medium,
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: 'bold',
     color: colors.textPrimary,
     marginBottom: spacing.xs,
   },
   subtitle: {
-    fontSize: 14,
+    fontSize: 16,
     color: colors.textSecondary,
-    textAlign: 'center',
+    marginBottom: spacing.xl,
   },
-  form: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.xl,
-  },
-  inputGroup: {
-    marginBottom: spacing.lg,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: colors.textPrimary,
-    marginBottom: spacing.xs,
-  },
-  inputWrapper: {
+  inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.md,
-    borderWidth: 1,
-    borderColor: colors.border,
+    borderRadius: borderRadius.lg,
     paddingHorizontal: spacing.md,
+    marginBottom: spacing.md,
+    height: 56,
     ...shadows.small,
   },
   inputIcon: {
@@ -199,55 +220,45 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    paddingVertical: spacing.md,
-    fontSize: 15,
+    fontSize: 16,
     color: colors.textPrimary,
   },
-  sendButton: {
-    flexDirection: 'row',
+  forgotPassword: {
+    alignSelf: 'flex-end',
+    marginBottom: spacing.lg,
+  },
+  forgotPasswordText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  loginButton: {
     backgroundColor: colors.primary,
-    paddingVertical: spacing.md,
-    borderRadius: borderRadius.md,
+    paddingVertical: spacing.lg,
+    borderRadius: borderRadius.lg,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: spacing.md,
-    gap: spacing.xs,
     ...shadows.medium,
   },
-  buttonDisabled: {
+  loginButtonDisabled: {
     opacity: 0.6,
   },
-  sendButtonText: {
-    color: colors.surface,
-    fontSize: 16,
+  loginButtonText: {
+    fontSize: 18,
     fontWeight: 'bold',
+    color: colors.surface,
   },
-  infoBox: {
-    flexDirection: 'row',
-    backgroundColor: colors.infoLight,
-    padding: spacing.md,
-    borderRadius: borderRadius.md,
-    marginTop: spacing.lg,
-    gap: spacing.sm,
-  },
-  infoText: {
-    flex: 1,
-    fontSize: 13,
-    color: colors.info,
-    lineHeight: 18,
-  },
-  footer: {
+  registerLink: {
     flexDirection: 'row',
     justifyContent: 'center',
     marginTop: spacing.lg,
   },
-  footerText: {
+  registerLinkText: {
     fontSize: 14,
     color: colors.textSecondary,
   },
-  footerLink: {
+  registerLinkButton: {
     fontSize: 14,
+    fontWeight: '600',
     color: colors.primary,
-    fontWeight: 'bold',
   },
 });

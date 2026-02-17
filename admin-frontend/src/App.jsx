@@ -11,6 +11,7 @@ import SuperAdminProducts from './pages/Products';
 import SuperAdminOrders from './pages/Orders';
 import SuperAdminTickets from './pages/Tickets';
 import SuperAdminReturns from './pages/Returns';
+import AddProduct from './pages/AddProduct';
 
 // Admin Pages
 import AdminDashboard from './pages/admin/Dashboard';
@@ -86,6 +87,7 @@ function App() {
           <Route path="super-admin/orders" element={userRole === 'super_admin' ? <SuperAdminOrders /> : <Navigate to={getDefaultRoute()} replace />} />
           <Route path="super-admin/tickets" element={userRole === 'super_admin' ? <SuperAdminTickets /> : <Navigate to={getDefaultRoute()} replace />} />
           <Route path="super-admin/returns" element={userRole === 'super_admin' ? <SuperAdminReturns /> : <Navigate to={getDefaultRoute()} replace />} />
+          <Route path="add-product" element={userRole === 'super_admin' || userRole === 'admin' ? <AddProduct /> : <Navigate to={getDefaultRoute()} replace />} />
 
           {/* Admin Routes (only 4 pages) */}
           <Route path="admin/dashboard" element={userRole === 'admin' ? <AdminDashboard /> : <Navigate to={getDefaultRoute()} replace />} />

@@ -1,16 +1,36 @@
 import { Tabs } from 'expo-router';
-import React from 'react';
-import { Platform, View, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Platform, View, StyleSheet, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useFocusEffect } from '@react-navigation/native';
+import { getCartTotal } from '../../src/utils/cartStorage';
 
 const colors = {
   primary: '#704F38',
   background: '#FFFFFF',
   inactive: '#FFFFFF',
   tabBarBg: '#2C2C2E',
+  error: '#FF3B30',
 };
 
 export default function TabLayout() {
+  const [cartCount, setCartCount] = useState(0);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      loadCartCount();
+    }, [])
+  );
+
+  const loadCartCount = async () => {
+    try {
+      const { itemCount } = await getCartTotal();
+      setCartCount(itemCount);
+    } catch (error) {
+      console.error('Error loading cart count:', error);
+    }
+  };
+
   return (
     <Tabs
       screenOptions={{
@@ -53,6 +73,11 @@ export default function TabLayout() {
             </View>
           ),
         }}
+        listeners={{
+          tabPress: () => {
+            loadCartCount();
+          },
+        }}
       />
       <Tabs.Screen
         name="categories"
@@ -60,9 +85,14 @@ export default function TabLayout() {
           title: 'Categories',
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
-              <Ionicons name="grid" size={24} color={focused ? colors.background : colors.inactive} />
+              <Ionicons name="shirt" size={24} color={focused ? colors.background : colors.inactive} />
             </View>
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            loadCartCount();
+          },
         }}
       />
       <Tabs.Screen
@@ -72,8 +102,18 @@ export default function TabLayout() {
           tabBarIcon: ({ color, focused }) => (
             <View style={[styles.iconContainer, focused && styles.activeIconContainer]}>
               <Ionicons name="cart" size={24} color={focused ? colors.background : colors.inactive} />
+              {cartCount > 0 && (
+                <View style={styles.badge}>
+                  <Text style={styles.badgeText}>{cartCount > 99 ? '99+' : cartCount}</Text>
+                </View>
+              )}
             </View>
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            loadCartCount();
+          },
         }}
       />
       <Tabs.Screen
@@ -86,6 +126,11 @@ export default function TabLayout() {
             </View>
           ),
         }}
+        listeners={{
+          tabPress: () => {
+            loadCartCount();
+          },
+        }}
       />
       <Tabs.Screen
         name="profile"
@@ -96,6 +141,11 @@ export default function TabLayout() {
               <Ionicons name="person" size={24} color={focused ? colors.background : colors.inactive} />
             </View>
           ),
+        }}
+        listeners={{
+          tabPress: () => {
+            loadCartCount();
+          },
         }}
       />
     </Tabs>
@@ -109,8 +159,26 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
   },
   activeIconContainer: {
     backgroundColor: colors.primary,
+  },
+  badge: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: colors.error,
+    borderRadius: 10,
+    minWidth: 20,
+    height: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 4,
+  },
+  badgeText: {
+    color: colors.background,
+    fontSize: 10,
+    fontWeight: 'bold',
   },
 });

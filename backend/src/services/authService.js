@@ -238,7 +238,7 @@ class AuthService {
 
   // Register new user
   async registerUser(data) {
-    const { name, email, mobile } = data;
+    const { name, email, mobile, password } = data;
 
     // Check if user already exists
     const existingUser = await User.findOne({
@@ -260,6 +260,7 @@ class AuthService {
       name,
       email,
       mobile,
+      password: password || undefined, // Only set if provided
       role: 'user',
     });
 
@@ -277,6 +278,45 @@ class AuthService {
         name: user.name,
         mobile: user.mobile,
         email: user.email,
+        role: user.role,
+      },
+    };
+  }
+
+  // User login with password
+  async userLogin(email, password) {
+    const user = await User.findOne({ 
+      email, 
+      role: 'user', 
+      isDeleted: false 
+    });
+
+    if (!user) {
+      throw new Error('Invalid credentials');
+    }
+
+    if (user.isBlocked) {
+      throw new Error('Your account has been blocked');
+    }
+
+    if (!user.password) {
+      throw new Error('Please use OTP login or set a password first');
+    }
+
+    const isPasswordValid = await user.comparePassword(password);
+    if (!isPasswordValid) {
+      throw new Error('Invalid credentials');
+    }
+
+    const token = generateToken(user._id, user.role);
+
+    return {
+      token,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        mobile: user.mobile,
         role: user.role,
       },
     };

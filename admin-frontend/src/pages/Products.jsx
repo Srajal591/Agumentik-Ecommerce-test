@@ -71,7 +71,12 @@ const Products = () => {
 
   return (
     <div style={styles.container}>
-      <h1 style={styles.title}>Products Management</h1>
+      <div style={styles.header}>
+        <h1 style={styles.title}>Products Management</h1>
+        <button onClick={() => window.location.href = '/add-product'} style={styles.addButton}>
+          + Add Product
+        </button>
+      </div>
 
       {/* Filters */}
       <div style={styles.filters}>
@@ -163,6 +168,22 @@ const styles = {
   container: {
     maxWidth: '1400px',
     width: '100%',
+  },
+  header: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  addButton: {
+    padding: '12px 24px',
+    backgroundColor: colors.primary,
+    color: colors.surface,
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
   },
   loading: {
     display: 'flex',
