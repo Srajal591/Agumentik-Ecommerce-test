@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,8 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
+  Animated,
+  ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -15,47 +17,107 @@ const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen() {
   const router = useRouter();
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  }, []);
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      <View style={styles.gradient}>
-        {/* Logo/Brand Section */}
-        <View style={styles.logoSection}>
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoText}>👕</Text>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Image Gallery Section */}
+        <Animated.View 
+          style={[
+            styles.imageSection,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          {/* Main Large Image - Left */}
+          <View style={styles.mainImageContainer}>
+            <Image
+              source={{ uri: 'https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?w=400&h=600&fit=crop' }}
+              style={styles.mainImage}
+              resizeMode="cover"
+            />
+            {/* Decorative Element */}
+            <View style={styles.decorativeCircle} />
           </View>
-          <Text style={styles.brandName}>Fashion Store</Text>
-          <Text style={styles.tagline}>Your Style, Your Way</Text>
-        </View>
 
-        {/* Illustration */}
-        <View style={styles.illustrationContainer}>
-          <Image
-            source={{ uri: 'https://via.placeholder.com/300x300/FFFFFF/704F38?text=Fashion' }}
-            style={styles.illustration}
-            resizeMode="contain"
-          />
-        </View>
+          {/* Side Images - Right */}
+          <View style={styles.sideImagesContainer}>
+            <View style={styles.topImageContainer}>
+              <Image
+                source={{ uri: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=300&h=300&fit=crop' }}
+                style={styles.topImage}
+                resizeMode="cover"
+              />
+            </View>
+            <View style={styles.bottomImageContainer}>
+              <Image
+                source={{ uri: 'https://images.unsplash.com/photo-1509631179647-0177331693ae?w=300&h=300&fit=crop' }}
+                style={styles.bottomImage}
+                resizeMode="cover"
+              />
+            </View>
+          </View>
+        </Animated.View>
 
-        {/* Action Buttons */}
-        <View style={styles.actionSection}>
+        {/* Content Section */}
+        <Animated.View 
+          style={[
+            styles.contentSection,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
+          <Text style={styles.title}>
+            The <Text style={styles.titleHighlight}>Fashion App</Text> That{'\n'}
+            Makes You Look Your Best
+          </Text>
+          
+          <Text style={styles.description}>
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+          </Text>
+
+          {/* Let's Get Started Button */}
           <TouchableOpacity
             style={styles.primaryButton}
             onPress={() => router.push('/(auth)/register')}
             activeOpacity={0.8}
           >
-            <Text style={styles.primaryButtonText}>Get Started</Text>
+            <Text style={styles.primaryButtonText}>Let's Get Started</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={styles.secondaryButton}
-            onPress={() => router.push('/(auth)/login')}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.secondaryButtonText}>I Already Have an Account</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+          {/* Sign In Link */}
+          <View style={styles.signInContainer}>
+            <Text style={styles.signInText}>Already have an account? </Text>
+            <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
+              <Text style={styles.signInLink}>Sign In</Text>
+            </TouchableOpacity>
+          </View>
+        </Animated.View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -63,77 +125,111 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: colors.background,
   },
-  gradient: {
-    flex: 1,
-    paddingHorizontal: spacing.xl,
+  scrollContent: {
+    flexGrow: 1,
+    paddingBottom: spacing.xl,
+  },
+  imageSection: {
+    flexDirection: 'row',
+    height: height * 0.55,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl,
+    marginBottom: spacing.xl,
+  },
+  mainImageContainer: {
+    flex: 1.2,
+    position: 'relative',
+    marginRight: spacing.md,
+  },
+  mainImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: borderRadius.xl * 2,
+    backgroundColor: colors.backgroundDark,
+  },
+  decorativeCircle: {
+    position: 'absolute',
+    top: -20,
+    left: -20,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: colors.primary,
+    opacity: 0.3,
   },
-  logoSection: {
-    alignItems: 'center',
-    marginTop: height * 0.08,
+  sideImagesContainer: {
+    flex: 1,
+    justifyContent: 'space-between',
   },
-  logoContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
-    backgroundColor: colors.surface,
-    justifyContent: 'center',
+  topImageContainer: {
+    flex: 1,
+    marginBottom: spacing.md,
+  },
+  topImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: borderRadius.xl * 1.5,
+    backgroundColor: colors.backgroundDark,
+  },
+  bottomImageContainer: {
+    flex: 1,
+  },
+  bottomImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: borderRadius.xl * 1.5,
+    backgroundColor: colors.backgroundDark,
+  },
+  contentSection: {
+    paddingHorizontal: spacing.xl,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    lineHeight: 38,
+    marginBottom: spacing.md,
+    textAlign: 'center',
+  },
+  titleHighlight: {
+    color: colors.primary,
+  },
+  description: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    lineHeight: 22,
+    textAlign: 'center',
+    marginBottom: spacing.xl,
+    paddingHorizontal: spacing.md,
+  },
+  primaryButton: {
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.lg,
+    borderRadius: borderRadius.xl,
     alignItems: 'center',
     marginBottom: spacing.lg,
     ...shadows.large,
   },
-  logoText: {
-    fontSize: 50,
-  },
-  brandName: {
-    fontSize: 32,
+  primaryButtonText: {
+    fontSize: 16,
     fontWeight: 'bold',
     color: colors.surface,
-    marginBottom: spacing.xs,
   },
-  tagline: {
-    fontSize: 16,
-    color: colors.surface,
-    opacity: 0.9,
-  },
-  illustrationContainer: {
-    flex: 1,
+  signInContainer: {
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginVertical: spacing.xl,
   },
-  illustration: {
-    width: width * 0.7,
-    height: width * 0.7,
+  signInText: {
+    fontSize: 14,
+    color: colors.textSecondary,
   },
-  actionSection: {
-    marginBottom: spacing.xl,
-    gap: spacing.md,
-  },
-  primaryButton: {
-    backgroundColor: colors.surface,
-    paddingVertical: spacing.lg,
-    borderRadius: borderRadius.xl,
-    alignItems: 'center',
-    ...shadows.medium,
-  },
-  primaryButtonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: colors.primary,
-  },
-  secondaryButton: {
-    backgroundColor: 'transparent',
-    paddingVertical: spacing.lg,
-    borderRadius: borderRadius.xl,
-    alignItems: 'center',
-    borderWidth: 2,
-    borderColor: colors.surface,
-  },
-  secondaryButtonText: {
-    fontSize: 16,
+  signInLink: {
+    fontSize: 14,
     fontWeight: '600',
-    color: colors.surface,
+    color: colors.primary,
+    textDecorationLine: 'underline',
   },
 });

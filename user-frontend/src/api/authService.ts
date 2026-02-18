@@ -29,7 +29,7 @@ authApi.interceptors.request.use(
 );
 
 export const authService = {
-  // Register user
+  // Register user (does NOT auto-login)
   register: async (name: string, email: string, mobile: string, password: string) => {
     try {
       const response = await authApi.post('/user/register', {
@@ -39,11 +39,7 @@ export const authService = {
         password,
       });
       
-      if (response.data.success && response.data.data.token) {
-        await AsyncStorage.setItem(TOKEN_KEY, response.data.data.token);
-        await AsyncStorage.setItem(USER_KEY, JSON.stringify(response.data.data.user));
-      }
-      
+      // Do NOT store token or user data - require explicit login
       return response.data;
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Registration failed');

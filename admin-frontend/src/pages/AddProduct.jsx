@@ -314,7 +314,7 @@ const AddProduct = () => {
 
         {/* Images */}
         <div style={styles.section}>
-          <h2 style={styles.sectionTitle}>Product Images *</h2>
+          <h2 style={styles.sectionTitle}>Product Images * (Maximum 5 images)</h2>
           
           <div style={styles.formGroup}>
             <input
@@ -323,10 +323,16 @@ const AddProduct = () => {
               multiple
               onChange={handleImageUpload}
               style={styles.fileInput}
-              disabled={uploadingImages}
+              disabled={uploadingImages || formData.images.length >= 5}
             />
             {uploadingImages && <span style={styles.uploadingText}>Uploading...</span>}
+            {formData.images.length >= 5 && (
+              <span style={styles.infoText}>Maximum 5 images reached</span>
+            )}
             {errors.images && <span style={styles.error}>{errors.images}</span>}
+            <span style={styles.helperText}>
+              Upload 4-5 high-quality images for best results. First image will be the main product image.
+            </span>
           </div>
 
           {formData.images.length > 0 && (
@@ -334,6 +340,7 @@ const AddProduct = () => {
               {formData.images.map((url, index) => (
                 <div key={index} style={styles.imagePreview}>
                   <img src={url} alt={`Product ${index + 1}`} style={styles.previewImage} />
+                  {index === 0 && <div style={styles.mainImageBadge}>Main</div>}
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
@@ -592,6 +599,19 @@ const styles = {
     fontSize: '14px',
     marginTop: spacing.xs,
   },
+  infoText: {
+    display: 'block',
+    color: colors.warning,
+    fontSize: '14px',
+    marginTop: spacing.xs,
+    fontWeight: '600',
+  },
+  helperText: {
+    display: 'block',
+    color: colors.textSecondary,
+    fontSize: '12px',
+    marginTop: spacing.xs,
+  },
   imageGrid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
@@ -613,6 +633,17 @@ const styles = {
     width: '100%',
     height: '100%',
     objectFit: 'cover',
+  },
+  mainImageBadge: {
+    position: 'absolute',
+    top: '5px',
+    left: '5px',
+    backgroundColor: colors.primary,
+    color: colors.surface,
+    padding: '4px 8px',
+    borderRadius: '4px',
+    fontSize: '10px',
+    fontWeight: 'bold',
   },
   removeImageButton: {
     position: 'absolute',

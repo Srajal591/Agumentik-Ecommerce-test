@@ -76,12 +76,16 @@ export default function RegisterScreen() {
       const response = await authService.register(name.trim(), email.trim(), mobile.trim(), password);
 
       if (response.success) {
-        Alert.alert('Success', 'Registration successful!', [
-          {
-            text: 'OK',
-            onPress: () => router.replace('/(tabs)'),
-          },
-        ]);
+        Alert.alert(
+          'Success', 
+          'Registration successful! Please login to continue.',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/(auth)/login'),
+            },
+          ]
+        );
       }
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Registration failed');

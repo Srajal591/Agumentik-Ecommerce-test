@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   Dimensions,
   Alert,
+  Animated,
+  FlatList,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -30,6 +32,12 @@ export default function ProductDetailsScreen() {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [inWishlist, setInWishlist] = useState(false);
+  
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const scaleAnim = useRef(new Animated.Value(0.9)).current;
+  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     fetchProduct();
@@ -38,6 +46,25 @@ export default function ProductDetailsScreen() {
   useEffect(() => {
     if (product) {
       checkWishlistStatus();
+      // Animate content in
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 600,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          friction: 8,
+          tension: 40,
+          useNativeDriver: true,
+        }),
+      ]).start();
     }
   }, [product]);
 
@@ -173,51 +200,49 @@ export default function ProductDetailsScreen() {
 
   return (
     <View style={styles.container}>
-      <ScrollView showsVerticalScrollIndicator={false} style={styles.scrollView}>
-        {/* Image Gallery */}
+      <ScrollView 
+        ref={scrollViewRef}
+        showsVerticalScrollIndicator={false} 
+        style={styles.scrollView}>
+        {/* Image Gallery with Main Image */}
         <View style={styles.imageGallery}>
-          <ScrollView
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={(e) => {
-              const index = Math.round(e.nativeEvent.contentOffset.x / width);
-              setSelectedImageIndex(index);
-            }}
-          >
-            {product.images?.map((image: string, index: number) => (
-              <Image key={index} source={{ uri: image }} style={styles.productImage} />
-            ))}
-          </ScrollView>
-
-          {/* Image Indicators */}
-          {product.images?.length > 1 && (
-            <View style={styles.imageIndicators}>
-              {product.images.map((_: any, index: number) => (
-                <View
-                  key={index}
-                  style={[
-                    styles.indicator,
-                    selectedImageIndex === index && styles.activeIndicator,
-                  ]}
-                />
-              ))}
-            </View>
-          )}
+          {/* Main Image */}
+          <Animated.View style={{ opacity: scaleAnim }}>
+            <Image 
+              source={{ uri: product.images?.[selectedImageIndex] || 'https://via.placeholder.com/400' }} 
+              style={styles.productImage} 
+            />
+          </Animated.View>
 
           {/* Discount Badge */}
           {hasDiscount && (
-            <View style={styles.discountBadge}>
+            <Animated.View 
+              style={[
+                styles.discountBadge,
+                {
+                  opacity: fadeAnim,
+                  transform: [{ scale: scaleAnim }],
+                },
+              ]}
+            >
               <Text style={styles.discountText}>{discountPercent}% OFF</Text>
-            </View>
+            </Animated.View>
           )}
 
           {/* Header Buttons */}
           <SafeAreaView edges={['top']} style={styles.headerButtons}>
-            <TouchableOpacity style={styles.headerBtn} onPress={() => router.back()}>
+            <TouchableOpacity 
+              style={styles.headerBtn} 
+              onPress={() => router.back()}
+              activeOpacity={0.7}
+            >
               <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.headerBtn} onPress={handleToggleWishlist}>
+            <TouchableOpacity 
+              style={styles.headerBtn} 
+              onPress={handleToggleWishlist}
+              activeOpacity={0.7}
+            >
               <Ionicons 
                 name={inWishlist ? "heart" : "heart-outline"} 
                 size={24} 
@@ -227,8 +252,67 @@ export default function ProductDetailsScreen() {
           </SafeAreaView>
         </View>
 
+        {/* Image Thumbnails */}
+        {product.images?.length > 1 && (
+          <Animated.View 
+            style={[
+              styles.thumbnailContainer,
+              {
+                opacity: fadeAnim,
+                transform: [{ translateY: slideAnim }],
+              },
+            ]}
+          >
+            <FlatList
+              data={product.images}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              keyExtractor={(item, index) => index.toString()}
+              contentContainerStyle={styles.thumbnailList}
+              renderItem={({ item, index }) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedImageIndex(index);
+                    // Animate image change
+                    Animated.sequence([
+                      Animated.timing(scaleAnim, {
+                        toValue: 0.95,
+                        duration: 100,
+                        useNativeDriver: true,
+                      }),
+                      Animated.spring(scaleAnim, {
+                        toValue: 1,
+                        friction: 8,
+                        useNativeDriver: true,
+                      }),
+                    ]).start();
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <View
+                    style={[
+                      styles.thumbnail,
+                      selectedImageIndex === index && styles.selectedThumbnail,
+                    ]}
+                  >
+                    <Image source={{ uri: item }} style={styles.thumbnailImage} />
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
+          </Animated.View>
+        )}
+
         {/* Product Info */}
-        <View style={styles.productInfo}>
+        <Animated.View 
+          style={[
+            styles.productInfo,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }],
+            },
+          ]}
+        >
           {/* Brand & Rating */}
           <View style={styles.topRow}>
             {product.brand && <Text style={styles.brand}>{product.brand}</Text>}
@@ -371,19 +455,35 @@ export default function ProductDetailsScreen() {
               </View>
             )}
           </View>
-        </View>
+        </Animated.View>
       </ScrollView>
 
       {/* Bottom Action Bar */}
-      <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.addToCartBtn} onPress={handleAddToCart}>
+      <Animated.View 
+        style={[
+          styles.bottomBar,
+          {
+            opacity: fadeAnim,
+            transform: [{ translateY: Animated.multiply(slideAnim, -1) }],
+          },
+        ]}
+      >
+        <TouchableOpacity 
+          style={styles.addToCartBtn} 
+          onPress={handleAddToCart}
+          activeOpacity={0.7}
+        >
           <Ionicons name="cart-outline" size={24} color={colors.primary} />
           <Text style={styles.addToCartText}>Add to Cart</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={styles.buyNowBtn} onPress={handleBuyNow}>
+        <TouchableOpacity 
+          style={styles.buyNowBtn} 
+          onPress={handleBuyNow}
+          activeOpacity={0.7}
+        >
           <Text style={styles.buyNowText}>Buy Now</Text>
         </TouchableOpacity>
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -397,13 +497,42 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   imageGallery: {
-    height: 400,
+    height: 450,
     position: 'relative',
+    backgroundColor: colors.backgroundDark,
   },
   productImage: {
     width: width,
-    height: 400,
-    backgroundColor: colors.backgroundDark,
+    height: 450,
+    resizeMode: 'cover',
+  },
+  thumbnailContainer: {
+    backgroundColor: colors.surface,
+    paddingVertical: spacing.md,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+  },
+  thumbnailList: {
+    paddingHorizontal: spacing.md,
+    gap: spacing.sm,
+  },
+  thumbnail: {
+    width: 70,
+    height: 90,
+    borderRadius: borderRadius.md,
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'transparent',
+    marginRight: spacing.sm,
+  },
+  selectedThumbnail: {
+    borderColor: colors.primary,
+    ...shadows.medium,
+  },
+  thumbnailImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
   },
   imageIndicators: {
     position: 'absolute',
@@ -426,12 +555,13 @@ const styles = StyleSheet.create({
   },
   discountBadge: {
     position: 'absolute',
-    top: 60,
+    top: 70,
     left: 16,
     backgroundColor: colors.error,
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: borderRadius.md,
+    ...shadows.large,
   },
   discountText: {
     color: colors.surface,
@@ -459,9 +589,8 @@ const styles = StyleSheet.create({
   },
   productInfo: {
     backgroundColor: colors.surface,
-    borderTopLeftRadius: borderRadius.xl * 2,
-    borderTopRightRadius: borderRadius.xl * 2,
-    marginTop: -30,
+    borderTopLeftRadius: borderRadius.xl * 1.5,
+    borderTopRightRadius: borderRadius.xl * 1.5,
     paddingTop: spacing.lg,
     paddingHorizontal: spacing.lg,
     paddingBottom: 100,
