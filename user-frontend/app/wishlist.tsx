@@ -83,9 +83,9 @@ export default function WishlistScreen() {
 
   const renderWishlistItem = ({ item }: { item: WishlistItem }) => {
     const displayPrice = item.discountPrice || item.price;
-    const hasDiscount = item.discountPrice && item.discountPrice < item.price;
+    const hasDiscount = !!(item.discountPrice && item.discountPrice < item.price);
     const discountPercent = hasDiscount
-      ? Math.round(((item.price - item.discountPrice) / item.price) * 100)
+      ? Math.round(((item.price - (item.discountPrice || 0)) / item.price) * 100)
       : 0;
 
     return (
@@ -99,29 +99,29 @@ export default function WishlistScreen() {
             source={{ uri: item.images?.[0] || 'https://via.placeholder.com/150' }}
             style={styles.itemImage}
           />
-          {hasDiscount && (
+          {hasDiscount ? (
             <View style={styles.discountBadge}>
               <Text style={styles.discountText}>{discountPercent}% OFF</Text>
             </View>
-          )}
+          ) : null}
         </View>
 
         <View style={styles.itemDetails}>
           <Text style={styles.itemName} numberOfLines={2}>
-            {item.name}
+            {item.name || 'Product'}
           </Text>
-          {item.brand && <Text style={styles.itemBrand}>{item.brand}</Text>}
+          {item.brand ? <Text style={styles.itemBrand}>{item.brand}</Text> : null}
           
-          {item.rating && (
+          {item.rating ? (
             <View style={styles.ratingContainer}>
               <Ionicons name="star" size={14} color={colors.warning} />
-              <Text style={styles.ratingText}>{item.rating}</Text>
+              <Text style={styles.ratingText}>{String(item.rating)}</Text>
             </View>
-          )}
+          ) : null}
 
           <View style={styles.priceRow}>
-            <Text style={styles.itemPrice}>₹{displayPrice}</Text>
-            {hasDiscount && <Text style={styles.originalPrice}>₹{item.price}</Text>}
+            <Text style={styles.itemPrice}>₹{displayPrice || 0}</Text>
+            {hasDiscount ? <Text style={styles.originalPrice}>₹{item.price || 0}</Text> : null}
           </View>
         </View>
 
@@ -161,12 +161,13 @@ export default function WishlistScreen() {
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Wishlist ({wishlistItems.length})</Text>
-        {wishlistItems.length > 0 && (
+        {wishlistItems.length > 0 ? (
           <TouchableOpacity onPress={handleClearWishlist}>
             <Text style={styles.clearText}>Clear</Text>
           </TouchableOpacity>
+        ) : (
+          <View style={styles.headerRight} />
         )}
-        {wishlistItems.length === 0 && <View style={styles.headerRight} />}
       </View>
 
       {/* Wishlist Items */}
