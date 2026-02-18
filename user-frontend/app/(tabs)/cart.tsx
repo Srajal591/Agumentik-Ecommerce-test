@@ -9,7 +9,7 @@ import {
   ActivityIndicator,
   Alert,
 } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
 import {
@@ -23,6 +23,7 @@ import {
 
 export default function CartScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [subtotal, setSubtotal] = useState(0);
@@ -44,6 +45,15 @@ export default function CartScreen() {
       console.error('Error loading cart:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStartShopping = () => {
+    // Navigate to the home tab (index)
+    if (navigation && navigation.navigate) {
+      navigation.navigate('index' as never);
+    } else {
+      router.push('/(tabs)/');
     }
   };
 
@@ -207,8 +217,9 @@ export default function CartScreen() {
           <Text style={styles.emptySubtext}>Add items to get started</Text>
           <TouchableOpacity
             style={styles.shopButton}
-            onPress={() => router.push('/(tabs)')}
+            onPress={handleStartShopping}
           >
+            <Ionicons name="bag-handle" size={24} color={colors.surface} />
             <Text style={styles.shopButtonText}>Start Shopping</Text>
           </TouchableOpacity>
         </View>
@@ -253,7 +264,7 @@ export default function CartScreen() {
         
         <TouchableOpacity style={styles.checkoutBtn} onPress={handleCheckout}>
           <Text style={styles.checkoutText}>Proceed to Checkout</Text>
-          <Ionicons name="arrow-forward" size={20} color={colors.surface} />
+          <Ionicons name="arrow-forward-circle" size={24} color={colors.surface} />
         </TouchableOpacity>
       </View>
     </View>
@@ -281,17 +292,19 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.lg,
-    paddingBottom: spacing.md,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.lg,
     backgroundColor: colors.surface,
-    borderBottomLeftRadius: borderRadius.xl,
-    borderBottomRightRadius: borderRadius.xl,
-    ...shadows.medium,
+    borderBottomLeftRadius: borderRadius.xl * 1.5,
+    borderBottomRightRadius: borderRadius.xl * 1.5,
+    ...shadows.large,
+    elevation: 8,
   },
   headerTitle: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: 'bold',
     color: colors.textPrimary,
+    letterSpacing: 0.5,
   },
   clearText: {
     fontSize: 14,
@@ -300,20 +313,23 @@ const styles = StyleSheet.create({
   },
   listContent: {
     padding: spacing.lg,
-    paddingBottom: 220,
+    paddingBottom: 280,
   },
   cartItem: {
     flexDirection: 'row',
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.xl,
-    padding: spacing.md,
-    marginBottom: spacing.md,
+    borderRadius: borderRadius.xl * 1.5,
+    padding: spacing.lg,
+    marginBottom: spacing.lg,
     ...shadows.large,
+    elevation: 6,
+    borderWidth: 1,
+    borderColor: '#F0F0F0',
   },
   itemImage: {
-    width: 90,
-    height: 110,
-    borderRadius: borderRadius.lg,
+    width: 100,
+    height: 120,
+    borderRadius: borderRadius.xl,
     backgroundColor: colors.backgroundDark,
   },
   itemDetails: {
@@ -323,11 +339,11 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xs,
   },
   itemName: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: colors.textPrimary,
     marginBottom: 4,
-    lineHeight: 20,
+    lineHeight: 22,
   },
   itemBrand: {
     fontSize: 12,
@@ -360,7 +376,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   itemPrice: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: colors.primary,
   },
@@ -373,21 +389,21 @@ const styles = StyleSheet.create({
     padding: 4,
   },
   quantityBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: colors.border,
-    ...shadows.small,
+    borderWidth: 2,
+    borderColor: colors.primary,
+    ...shadows.medium,
   },
   quantityText: {
-    fontSize: 15,
-    fontWeight: '600',
+    fontSize: 16,
+    fontWeight: '700',
     color: colors.textPrimary,
-    minWidth: 28,
+    minWidth: 32,
     textAlign: 'center',
   },
   removeBtn: {
@@ -399,40 +415,48 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: spacing.xl,
+    paddingBottom: 150,
   },
   emptyText: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginTop: spacing.lg,
+    marginTop: spacing.xl,
   },
   emptySubtext: {
-    fontSize: 15,
+    fontSize: 16,
     color: colors.textSecondary,
     marginTop: spacing.sm,
-    marginBottom: spacing.xl,
+    marginBottom: spacing.xl * 1.5,
     textAlign: 'center',
   },
   shopButton: {
+    flexDirection: 'row',
     paddingHorizontal: spacing.xl * 1.5,
-    paddingVertical: spacing.md + 2,
+    paddingVertical: spacing.md + 4,
     backgroundColor: colors.primary,
     borderRadius: borderRadius.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
     ...shadows.large,
+    elevation: 10,
   },
   shopButtonText: {
-    fontSize: 16,
+    fontSize: 17,
     fontWeight: 'bold',
     color: colors.surface,
+    letterSpacing: 0.5,
   },
   bottomSummary: {
     position: 'absolute',
-    bottom: 0,
+    bottom: 120,
     left: 0,
     right: 0,
     backgroundColor: colors.surface,
     padding: spacing.lg,
-    paddingTop: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
     borderTopLeftRadius: borderRadius.xl * 1.5,
     borderTopRightRadius: borderRadius.xl * 1.5,
     ...shadows.large,
@@ -459,12 +483,12 @@ const styles = StyleSheet.create({
     marginVertical: spacing.md,
   },
   totalLabel: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: colors.textPrimary,
   },
   totalValue: {
-    fontSize: 24,
+    fontSize: 28,
     fontWeight: 'bold',
     color: colors.primary,
   },
@@ -474,14 +498,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: spacing.sm,
     backgroundColor: colors.primary,
-    paddingVertical: spacing.md + 2,
+    paddingVertical: spacing.md + 4,
     borderRadius: borderRadius.xl,
     marginTop: spacing.md,
     ...shadows.large,
+    elevation: 10,
   },
   checkoutText: {
-    fontSize: 17,
+    fontSize: 18,
     fontWeight: 'bold',
     color: colors.surface,
+    letterSpacing: 0.5,
   },
 });
