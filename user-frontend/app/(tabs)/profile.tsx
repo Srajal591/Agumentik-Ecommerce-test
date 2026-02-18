@@ -74,9 +74,9 @@ export default function ProfileScreen() {
     },
     {
       id: '2',
-      title: 'Addresses',
+      title: 'Manage Addresses',
       icon: 'location-outline',
-      onPress: () => {},
+      onPress: () => router.push('/address'),
     },
     {
       id: '3',

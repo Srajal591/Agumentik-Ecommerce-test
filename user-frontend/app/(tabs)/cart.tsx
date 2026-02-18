@@ -120,20 +120,14 @@ export default function CartScreen() {
       return;
     }
 
-    Alert.alert(
-      'Checkout',
-      `Total: ₹${subtotal}\nItems: ${itemCount}`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Proceed',
-          onPress: () => {
-            // TODO: Navigate to checkout
-            console.log('Proceeding to checkout...');
-          },
-        },
-      ]
-    );
+    // Navigate to address selection for checkout
+    router.push({
+      pathname: '/checkout/address',
+      params: {
+        cartItems: JSON.stringify(cartItems),
+        isBuyNow: 'false',
+      },
+    });
   };
 
   const renderCartItem = ({ item }: { item: CartItem }) => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,47 +6,67 @@ import {
   ScrollView,
   TouchableOpacity,
   Image,
+  ActivityIndicator,
+  RefreshControl,
+  Alert,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
+import { orderService } from '../../src/api/orderService';
+
+interface Order {
+  _id: string;
+  orderNumber: string;
+  items: any[];
+  total: number;
+  orderStatus: string;
+  createdAt: string;
+}
 
 export default function OrdersScreen() {
-  const orders = [
-    {
-      id: '1',
-      orderNumber: 'ORD-2024-001',
-      date: '2024-02-08',
-      status: 'delivered',
-      total: 7498,
-      items: 2,
-      image: 'https://via.placeholder.com/60x80/704F38/FFFFFF?text=Order',
-    },
-    {
-      id: '2',
-      orderNumber: 'ORD-2024-002',
-      date: '2024-02-07',
-      status: 'shipped',
-      total: 4999,
-      items: 1,
-      image: 'https://via.placeholder.com/60x80/8A6A52/FFFFFF?text=Order',
-    },
-    {
-      id: '3',
-      orderNumber: 'ORD-2024-003',
-      date: '2024-02-06',
-      status: 'pending',
-      total: 2499,
-      items: 1,
-      image: 'https://via.placeholder.com/60x80/5C3F2E/FFFFFF?text=Order',
-    },
-  ];
+  const router = useRouter();
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  useEffect(() => {
+    loadOrders();
+  }, []);
+
+  const loadOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await orderService.getUserOrders();
+      setOrders(response.data.orders || []);
+    } catch (error: any) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadOrders();
+    setRefreshing(false);
+  };
+
+  const handleViewOrder = (orderId: string) => {
+    router.push({
+      pathname: '/order/[id]',
+      params: { id: orderId },
+    });
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'delivered':
         return colors.success;
       case 'shipped':
+        return colors.primary;
+      case 'confirmed':
         return colors.info;
       case 'pending':
         return colors.warning;
@@ -63,6 +83,8 @@ export default function OrdersScreen() {
         return 'checkmark-circle';
       case 'shipped':
         return 'airplane';
+      case 'confirmed':
+        return 'checkmark-done';
       case 'pending':
         return 'time';
       case 'cancelled':
@@ -71,6 +93,42 @@ export default function OrdersScreen() {
         return 'ellipse';
     }
   };
+
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>My Orders</Text>
+        </View>
+        <View style={styles.centered}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>Loading orders...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (orders.length === 0) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.header}>
+          <Text style={styles.headerTitle}>My Orders</Text>
+        </View>
+        <View style={styles.emptyContainer}>
+          <Ionicons name="receipt-outline" size={80} color={colors.textLight} />
+          <Text style={styles.emptyText}>No orders yet</Text>
+          <Text style={styles.emptySubtext}>Start shopping to place your first order</Text>
+          <TouchableOpacity
+            style={styles.shopButton}
+            onPress={() => router.push('/(tabs)/')}
+          >
+            <Ionicons name="bag-handle" size={20} color={colors.surface} />
+            <Text style={styles.shopButtonText}>Start Shopping</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -85,44 +143,66 @@ export default function OrdersScreen() {
       <ScrollView 
         style={styles.ordersList} 
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.ordersListContent}>
+        contentContainerStyle={styles.ordersListContent}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[colors.primary]} />
+        }>
         {orders.map((order) => (
-          <TouchableOpacity key={order.id} style={styles.orderCard}>
+          <TouchableOpacity 
+            key={order._id} 
+            style={styles.orderCard}
+            onPress={() => handleViewOrder(order._id)}
+          >
             <View style={styles.orderHeader}>
               <View>
-                <Text style={styles.orderNumber}>{order.orderNumber}</Text>
-                <Text style={styles.orderDate}>{order.date}</Text>
+                <Text style={styles.orderNumber}>#{order.orderNumber}</Text>
+                <Text style={styles.orderDate}>
+                  {new Date(order.createdAt).toLocaleDateString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                  })}
+                </Text>
               </View>
               <View
                 style={[
                   styles.statusBadge,
-                  { backgroundColor: getStatusColor(order.status) + '20' },
+                  { backgroundColor: getStatusColor(order.orderStatus) + '20' },
                 ]}>
                 <Ionicons
-                  name={getStatusIcon(order.status) as any}
+                  name={getStatusIcon(order.orderStatus) as any}
                   size={14}
-                  color={getStatusColor(order.status)}
+                  color={getStatusColor(order.orderStatus)}
                 />
                 <Text
-                  style={[styles.statusText, { color: getStatusColor(order.status) }]}>
-                  {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+                  style={[styles.statusText, { color: getStatusColor(order.orderStatus) }]}>
+                  {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
                 </Text>
               </View>
             </View>
 
             <View style={styles.orderBody}>
-              <Image source={{ uri: order.image }} style={styles.orderImage} />
+              <Image 
+                source={{ uri: order.items[0]?.image || 'https://via.placeholder.com/60x80' }} 
+                style={styles.orderImage} 
+              />
               <View style={styles.orderDetails}>
-                <Text style={styles.itemsCount}>{order.items} item(s)</Text>
+                <Text style={styles.itemsCount}>{order.items.length} item(s)</Text>
                 <Text style={styles.orderTotal}>₹{order.total}</Text>
               </View>
             </View>
 
             <View style={styles.orderFooter}>
-              <TouchableOpacity style={styles.actionBtn}>
+              <TouchableOpacity 
+                style={styles.actionBtn}
+                onPress={() => handleViewOrder(order._id)}
+              >
                 <Text style={styles.actionBtnText}>Track Order</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionBtn, styles.actionBtnOutline]}>
+              <TouchableOpacity 
+                style={[styles.actionBtn, styles.actionBtnOutline]}
+                onPress={() => handleViewOrder(order._id)}
+              >
                 <Text style={[styles.actionBtnText, styles.actionBtnTextOutline]}>
                   View Details
                 </Text>
@@ -139,6 +219,49 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  centered: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: spacing.md,
+    fontSize: 14,
+    color: colors.textSecondary,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: spacing.xl,
+  },
+  emptyText: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginTop: spacing.lg,
+  },
+  emptySubtext: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  shopButton: {
+    flexDirection: 'row',
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    borderRadius: borderRadius.xl,
+    alignItems: 'center',
+    gap: spacing.sm,
+    ...shadows.large,
+  },
+  shopButtonText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: colors.surface,
   },
   header: {
     flexDirection: 'row',

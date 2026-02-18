@@ -120,21 +120,22 @@ export default function ProductDetailsScreen() {
       return;
     }
 
-    // Navigate to checkout or cart
-    Alert.alert(
-      'Buy Now',
-      `Product: ${product.name}\nSize: ${selectedSize}\nColor: ${selectedColor}\nQuantity: ${quantity}\nPrice: ₹${(product.discountPrice || product.price) * quantity}`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Proceed to Checkout',
-          onPress: () => {
-            // TODO: Navigate to checkout
-            console.log('Proceeding to checkout...');
-          },
-        },
-      ]
-    );
+    // Prepare cart item for checkout
+    const cartItem = {
+      ...product,
+      selectedSize,
+      selectedColor,
+      quantity,
+    };
+
+    // Navigate to address selection for checkout
+    router.push({
+      pathname: '/checkout/address',
+      params: {
+        cartItems: JSON.stringify([cartItem]),
+        isBuyNow: 'true',
+      },
+    });
   };
 
   const handleAddToCart = async () => {
