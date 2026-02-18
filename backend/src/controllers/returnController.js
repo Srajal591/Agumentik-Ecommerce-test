@@ -36,6 +36,21 @@ exports.getAllReturns = async (req, res, next) => {
   }
 };
 
+// Get user returns
+exports.getUserReturns = async (req, res, next) => {
+  try {
+    const { page, limit, skip } = req.pagination;
+    const result = await returnService.getUserReturns(req.user._id, page, limit, skip);
+
+    res.status(200).json({
+      success: true,
+      data: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Get return by ID
 exports.getReturnById = async (req, res, next) => {
   try {
@@ -44,6 +59,7 @@ exports.getReturnById = async (req, res, next) => {
     // Check if user has permission to view this return
     if (
       req.user.role !== 'admin' &&
+      req.user.role !== 'super_admin' &&
       returnRequest.user._id.toString() !== req.user._id.toString()
     ) {
       return res.status(403).json({
@@ -64,18 +80,36 @@ exports.getReturnById = async (req, res, next) => {
 // Update return status (Admin)
 exports.updateReturnStatus = async (req, res, next) => {
   try {
-    const { status, adminNotes, refundAmount } = req.body;
+    const { status, adminNotes, refundAmount, pickupScheduledAt } = req.body;
     const returnRequest = await returnService.updateReturnStatus(
       req.params.id,
       status,
       adminNotes,
-      refundAmount
+      refundAmount,
+      pickupScheduledAt
     );
 
     res.status(200).json({
       success: true,
       message: 'Return status updated successfully',
       data: returnRequest,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Check return eligibility
+exports.checkReturnEligibility = async (req, res, next) => {
+  try {
+    const result = await returnService.checkReturnEligibility(
+      req.params.orderId,
+      req.user._id
+    );
+
+    res.status(200).json({
+      success: true,
+      data: result,
     });
   } catch (error) {
     next(error);

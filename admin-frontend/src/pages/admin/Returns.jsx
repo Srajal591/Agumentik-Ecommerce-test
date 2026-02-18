@@ -16,13 +16,30 @@ const AdminReturns = () => {
       setLoading(true);
       const response = await axios.get(`/returns?page=${pagination.page}&limit=${pagination.limit}`);
       
-      if (response.success) {
-        setReturns(response.data.returns);
-        setPagination((prev) => ({ ...prev, total: response.data.pagination.total }));
+      console.log('Admin Returns API Response:', response);
+      console.log('Response structure:', {
+        hasSuccess: !!response.success,
+        hasData: !!response.data,
+        dataKeys: response.data ? Object.keys(response.data) : 'no data'
+      });
+      
+      if (response && response.success && response.data) {
+        console.log('Returns found:', response.data.returns?.length || 0);
+        setReturns(response.data.returns || []);
+        setPagination((prev) => ({ 
+          ...prev, 
+          total: response.data.pagination?.total || 0 
+        }));
+      } else {
+        console.error('Unexpected response structure:', response);
+        alert('Failed to load returns. Check console for details.');
+        setReturns([]);
       }
     } catch (error) {
       console.error('Error fetching returns:', error);
-      alert('Failed to fetch returns');
+      console.error('Error details:', error.response || error.message);
+      alert('Failed to fetch returns: ' + (error.message || 'Unknown error'));
+      setReturns([]);
     } finally {
       setLoading(false);
     }
@@ -47,6 +64,24 @@ const AdminReturns = () => {
     <div style={styles.container}>
       <div style={styles.header}>
         <h1 style={styles.title}>Returns Management</h1>
+        <button 
+          onClick={fetchReturns}
+          style={{
+            padding: '10px 20px',
+            backgroundColor: colors.primary,
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            fontSize: '14px',
+            fontWeight: '600',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}
+        >
+          🔄 Refresh
+        </button>
       </div>
 
       <div style={styles.card}>
@@ -89,9 +124,27 @@ const AdminReturns = () => {
           </table>
         </div>
 
-        {returns.length === 0 && (
+        {returns.length === 0 && !loading && (
           <div style={styles.emptyState}>
-            <p>No returns found.</p>
+            <p style={{ fontSize: '16px', marginBottom: '8px' }}>No returns found.</p>
+            <p style={{ fontSize: '14px', color: colors.textLight, marginBottom: '16px' }}>
+              Returns will appear here once customers submit return requests.
+            </p>
+            <button 
+              onClick={fetchReturns}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: colors.primary,
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}
+            >
+              Refresh
+            </button>
           </div>
         )}
 

@@ -292,8 +292,17 @@ export default function OrderDetailsScreen() {
         </View>
       </ScrollView>
 
-      {/* Help Button */}
+      {/* Action Buttons */}
       <View style={styles.footer}>
+        {order.orderStatus === 'delivered' && (
+          <TouchableOpacity 
+            style={styles.returnButton}
+            onPress={() => router.push(`/return/${order._id}`)}
+          >
+            <Ionicons name="return-down-back-outline" size={20} color={colors.surface} />
+            <Text style={styles.returnButtonText}>Return Order</Text>
+          </TouchableOpacity>
+        )}
         <TouchableOpacity style={styles.helpButton}>
           <Ionicons name="help-circle-outline" size={20} color={colors.primary} />
           <Text style={styles.helpButtonText}>Need Help?</Text>
@@ -569,6 +578,21 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderTopWidth: 1,
     borderTopColor: colors.border,
+    gap: spacing.sm,
+  },
+  returnButton: {
+    flexDirection: 'row',
+    backgroundColor: colors.primary,
+    paddingVertical: spacing.md,
+    borderRadius: borderRadius.xl,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  returnButtonText: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: colors.surface,
   },
   helpButton: {
     flexDirection: 'row',

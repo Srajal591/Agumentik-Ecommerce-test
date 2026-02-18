@@ -8,6 +8,7 @@
 
 // Using your computer's actual IP address (works for both emulator and physical device)
 export const API_BASE_URL = 'http://192.168.31.48:5000/api';
+export const API_URL = API_BASE_URL; // Alias for compatibility
 
 // For Android emulator, use: http://10.0.2.2:5000/api
 // For iOS simulator, use: http://localhost:5000/api

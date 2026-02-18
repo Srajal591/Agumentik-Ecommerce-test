@@ -1,5 +1,6 @@
 const Return = require('../models/Return');
 const Order = require('../models/Order');
+const Product = require('../models/Product');
 const { generateReturnNumber } = require('../utils/generateOrderNumber');
 
 class ReturnService {
@@ -7,19 +8,76 @@ class ReturnService {
   async createReturn(userId, returnData) {
     const returnNumber = generateReturnNumber();
 
-    // Verify order belongs to user
-    const order = await Order.findOne({ _id: returnData.order, user: userId });
+    // Verify order belongs to user and is delivered
+    const order = await Order.findOne({ 
+      _id: returnData.order, 
+      user: userId,
+      orderStatus: 'delivered'
+    }).populate('items.product');
+    
     if (!order) {
-      throw new Error('Order not found');
+      throw new Error('Order not found or not eligible for return');
     }
 
-    const returnRequest = await Return.create({
-      ...returnData,
-      returnNumber,
-      user: userId,
+    // Check if deliveredAt exists
+    if (!order.deliveredAt) {
+      throw new Error('Order delivery date not found');
+    }
+
+    // Check if return window is valid (e.g., 7 days from delivery)
+    const deliveryDate = new Date(order.deliveredAt);
+    const currentDate = new Date();
+    const daysSinceDelivery = Math.floor((currentDate - deliveryDate) / (1000 * 60 * 60 * 24));
+    
+    if (daysSinceDelivery > 7) {
+      throw new Error('Return window has expired. Returns are only accepted within 7 days of delivery.');
+    }
+
+    // Validate items belong to the order
+    for (const item of returnData.items) {
+      const orderItem = order.items.find(
+        oi => oi.product._id.toString() === item.product.toString()
+      );
+      if (!orderItem) {
+        throw new Error('Invalid item in return request');
+      }
+      if (item.quantity > orderItem.quantity) {
+        throw new Error('Return quantity exceeds ordered quantity');
+      }
+    }
+
+    // Calculate refund amount
+    let refundAmount = 0;
+    const itemsWithDetails = returnData.items.map(item => {
+      const orderItem = order.items.find(
+        oi => oi.product._id.toString() === item.product.toString()
+      );
+      refundAmount += orderItem.price * item.quantity;
+      return {
+        product: item.product,
+        name: orderItem.name,
+        price: orderItem.price,
+        quantity: item.quantity,
+        size: orderItem.size,
+        color: orderItem.color,
+        image: orderItem.image,
+        reason: item.reason,
+      };
     });
 
-    return await returnRequest.populate('order user');
+    const returnRequest = await Return.create({
+      returnNumber,
+      user: userId,
+      order: returnData.order,
+      items: itemsWithDetails,
+      reason: returnData.reason,
+      type: returnData.type,
+      refundAmount,
+      images: returnData.images || [],
+      pickupAddress: returnData.pickupAddress || order.shippingAddress,
+    });
+
+    return await returnRequest.populate('order user items.product');
   }
 
   // Get all returns
@@ -40,7 +98,7 @@ class ReturnService {
 
     const returns = await Return.find(query)
       .populate('user', 'name mobile email')
-      .populate('order', 'orderNumber total')
+      .populate('order', 'orderNumber total deliveredAt')
       .populate('items.product', 'name images')
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -74,30 +132,132 @@ class ReturnService {
   }
 
   // Update return status
-  async updateReturnStatus(returnId, status, adminNotes, refundAmount) {
-    const returnRequest = await Return.findById(returnId);
+  async updateReturnStatus(returnId, status, adminNotes, refundAmount, pickupScheduledAt) {
+    const returnRequest = await Return.findById(returnId).populate('order items.product');
 
     if (!returnRequest) {
       throw new Error('Return request not found');
     }
 
+    const oldStatus = returnRequest.status;
     returnRequest.status = status;
+    
     if (adminNotes) {
       returnRequest.adminNotes = adminNotes;
     }
-    if (refundAmount) {
+    
+    if (refundAmount !== undefined) {
       returnRequest.refundAmount = refundAmount;
     }
 
-    // Update order payment status if refund is completed
-    if (status === 'completed' && returnRequest.type === 'refund') {
-      await Order.findByIdAndUpdate(returnRequest.order, {
-        paymentStatus: 'refunded',
-      });
+    // Handle status-specific updates
+    if (status === 'approved' && oldStatus === 'requested') {
+      if (pickupScheduledAt) {
+        returnRequest.pickupScheduledAt = pickupScheduledAt;
+      }
+    }
+
+    if (status === 'picked_up' && oldStatus === 'approved') {
+      returnRequest.pickedUpAt = new Date();
+    }
+
+    if (status === 'rejected') {
+      returnRequest.rejectedAt = new Date();
+    }
+
+    if (status === 'completed' && oldStatus === 'picked_up') {
+      returnRequest.completedAt = new Date();
+
+      // Process refund
+      if (returnRequest.type === 'refund' || returnRequest.type === 'return') {
+        await Order.findByIdAndUpdate(returnRequest.order._id, {
+          paymentStatus: 'refunded',
+        });
+      }
+
+      // Restore inventory for returns
+      if (returnRequest.type === 'return' || returnRequest.type === 'replacement') {
+        for (const item of returnRequest.items) {
+          const product = await Product.findById(item.product._id);
+          if (product && item.size) {
+            const sizeObj = product.sizes.find((s) => s.size === item.size);
+            if (sizeObj) {
+              sizeObj.stock += item.quantity;
+              await product.save();
+            }
+          }
+        }
+      }
     }
 
     await returnRequest.save();
     return returnRequest;
+  }
+
+  // Get user returns
+  async getUserReturns(userId, page, limit, skip) {
+    const returns = await Return.find({ user: userId, isDeleted: false })
+      .populate('order', 'orderNumber total deliveredAt')
+      .populate('items.product', 'name images')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await Return.countDocuments({ user: userId, isDeleted: false });
+
+    return {
+      returns,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+      },
+    };
+  }
+
+  // Check if order is eligible for return
+  async checkReturnEligibility(orderId, userId) {
+    const order = await Order.findOne({ 
+      _id: orderId, 
+      user: userId,
+      orderStatus: 'delivered'
+    }).populate('items.product');
+
+    if (!order) {
+      return { eligible: false, reason: 'Order not found or not delivered' };
+    }
+
+    // Check if deliveredAt exists
+    if (!order.deliveredAt) {
+      return { eligible: false, reason: 'Order delivery date not found' };
+    }
+
+    // Check if already returned
+    const existingReturn = await Return.findOne({ 
+      order: orderId, 
+      isDeleted: false,
+      status: { $nin: ['rejected'] }
+    });
+
+    if (existingReturn) {
+      return { eligible: false, reason: 'Return request already exists for this order' };
+    }
+
+    // Check return window (7 days)
+    const deliveryDate = new Date(order.deliveredAt);
+    const currentDate = new Date();
+    const daysSinceDelivery = Math.floor((currentDate - deliveryDate) / (1000 * 60 * 60 * 24));
+    
+    if (daysSinceDelivery > 7) {
+      return { eligible: false, reason: 'Return window has expired (7 days from delivery)' };
+    }
+
+    return { 
+      eligible: true, 
+      daysRemaining: 7 - daysSinceDelivery,
+      order 
+    };
   }
 }
 
