@@ -1,9 +1,10 @@
-import { Tabs } from 'expo-router';
+import { Tabs, useRouter, useSegments } from 'expo-router';
 import React, { useState, useEffect } from 'react';
-import { Platform, View, StyleSheet, Text } from 'react-native';
+import { Platform, View, StyleSheet, Text, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import { getCartTotal } from '../../src/utils/cartStorage';
+import { authService } from '../../src/api/authService';
 
 const colors = {
   primary: '#704F38',
@@ -14,7 +15,35 @@ const colors = {
 };
 
 export default function TabLayout() {
+  const router = useRouter();
+  const segments = useSegments();
   const [cartCount, setCartCount] = useState(0);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isChecking, setIsChecking] = useState(true);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    try {
+      setIsChecking(true);
+      const isLoggedIn = await authService.isLoggedIn();
+      setIsAuthenticated(isLoggedIn);
+      
+      // Only redirect if not authenticated and we're in the tabs route
+      if (!isLoggedIn && segments[0] === '(tabs)') {
+        setTimeout(() => {
+          router.replace('/(auth)/welcome');
+        }, 100);
+      }
+    } catch (error) {
+      console.error('Auth check error:', error);
+      setIsAuthenticated(false);
+    } finally {
+      setIsChecking(false);
+    }
+  };
 
   useFocusEffect(
     React.useCallback(() => {
@@ -30,6 +59,20 @@ export default function TabLayout() {
       console.error('Error loading cart count:', error);
     }
   };
+
+  // Show loading only briefly
+  if (isChecking || isAuthenticated === null) {
+    return (
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
+        <ActivityIndicator size="large" color={colors.primary} />
+      </View>
+    );
+  }
+
+  // Don't render tabs if not authenticated
+  if (!isAuthenticated) {
+    return null;
+  }
 
   return (
     <Tabs

@@ -50,11 +50,15 @@ export default function ProfileScreen() {
           style: 'destructive',
           onPress: async () => {
             try {
+              // Call logout service
               await authService.logout();
+              
+              // Force redirect to welcome page
               router.replace('/(auth)/welcome');
             } catch (error) {
               console.error('Logout error:', error);
-              Alert.alert('Error', 'Failed to logout. Please try again.');
+              // Even if there's an error, still redirect to welcome
+              router.replace('/(auth)/welcome');
             }
           },
         },
