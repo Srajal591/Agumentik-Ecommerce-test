@@ -1,298 +1,217 @@
-# Fashion E-Commerce Platform
+# E-Commerce Fashion Store
 
-A complete single-vendor fashion e-commerce platform with one shared backend and two frontend clients (Admin Web + User Mobile App).
+A complete full-stack e-commerce application for fashion products with Admin Panel and User Mobile App.
 
-## 🏗️ Architecture
-
-- **Backend**: Node.js + Express.js + MongoDB
-- **Admin Frontend**: React.js (Web)
-- **User Frontend**: React Native (Expo)
-- **Authentication**: JWT + OTP-based login
-- **Authorization**: Role-Based Access Control (RBAC)
-- **Payment**: Dummy Razorpay (test mode)
-
-## 📁 Project Structure
+## 🚀 Project Structure
 
 ```
-clothing-store/
-├── backend/              # Node.js + Express API
-├── admin-frontend/       # React.js Admin Dashboard
+├── backend/              # Node.js + Express API Server
+├── admin-frontend/       # React Admin Dashboard
 ├── user-frontend/        # React Native Mobile App
-└── README.md
+├── API_DOCUMENTATION.md  # Complete API Documentation
+├── SETUP_GUIDE.md        # Setup Instructions
+└── ORDER_FLOW_COMPLETE.md # Order System Documentation
 ```
 
-## 🚀 Getting Started
+## � Features
 
-### Prerequisites
+### User Mobile App (React Native)
+- **Authentication**: Mobile OTP-based login/registration
+- **Product Browsing**: Categories, search, filters
+- **Shopping Cart**: Add/remove items, quantity management
+- **Wishlist**: Save favorite products
+- **Order Management**: Complete checkout flow with COD payment
+- **Address Management**: Multiple delivery addresses
+- **Order Tracking**: Real-time order status updates
+- **Profile Management**: User profile and settings
 
-- Node.js (v16 or higher)
-- MongoDB (running locally or MongoDB Atlas)
-- npm or yarn
+### Admin Dashboard (React)
+- **Dashboard**: Sales analytics and statistics
+- **Product Management**: CRUD operations with image upload
+- **Category Management**: Organize products by categories
+- **Order Management**: View and update order status
+- **User Management**: View and manage users
+- **Admin Management**: Role-based access control
+- **Returns & Tickets**: Customer support management
 
-### Backend Setup
+### Backend API (Node.js + Express)
+- **RESTful API**: Clean and organized endpoints
+- **Authentication**: JWT-based auth with role management
+- **Database**: MongoDB with Mongoose ODM
+- **File Upload**: Cloudinary integration for images
+- **Email Service**: Nodemailer for OTP and notifications
+- **Security**: Helmet, CORS, input validation
+- **Error Handling**: Centralized error management
 
-1. Navigate to backend directory:
+## 🛠️ Tech Stack
+
+### Backend
+- Node.js & Express.js
+- MongoDB & Mongoose
+- JWT Authentication
+- Cloudinary (Image Storage)
+- Nodemailer (Email Service)
+- Bcrypt (Password Hashing)
+
+### Admin Frontend
+- React.js
+- React Router
+- Axios
+- CSS3
+
+### User Frontend
+- React Native (Expo)
+- Expo Router
+- AsyncStorage
+- Axios
+
+## 📋 Prerequisites
+
+- Node.js (v14 or higher)
+- MongoDB (local or Atlas)
+- Cloudinary Account
+- Gmail Account (for OTP emails)
+
+## 🚀 Quick Start
+
+### 1. Backend Setup
+
 ```bash
 cd backend
-```
-
-2. Install dependencies:
-```bash
 npm install
 ```
 
-3. Configure environment variables:
-- Copy `.env.example` to `.env`
-- Update MongoDB URI and other settings
-
-4. Seed admin user:
-```bash
-npm run seed
+Create `.env` file:
+```env
+PORT=5000
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+CLOUDINARY_CLOUD_NAME=your_cloudinary_name
+CLOUDINARY_API_KEY=your_cloudinary_key
+CLOUDINARY_API_SECRET=your_cloudinary_secret
+EMAIL_USER=your_gmail@gmail.com
+EMAIL_PASS=your_gmail_app_password
+CORS_ORIGIN=*
 ```
 
-5. Start the server:
-```bash
-npm run dev
-```
-
-The backend will run on `http://localhost:5000`
-
-**Default Admin Credentials:**
-- Email: `admin@fashionstore.com`
-- Password: `Admin@123`
-
-### Admin Frontend Setup
-
-1. Navigate to admin-frontend directory:
-```bash
-cd admin-frontend
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Update API URL (if needed):
-- Open `admin-frontend/src/config/api.js`
-- Change `API_BASE_URL` if your backend runs on a different port
-
-4. Start the development server:
-```bash
-npm run dev
-```
-
-The admin dashboard will run on `http://localhost:5173`
-
-### User Frontend Setup
-
-1. Navigate to user-frontend directory:
-```bash
-cd user-frontend
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Update API URL:
-- Open `user-frontend/src/config/api.js`
-- Update `API_BASE_URL` based on your setup:
-  - Android Emulator: `http://10.0.2.2:5000/api`
-  - iOS Simulator: `http://localhost:5000/api`
-  - Physical Device: `http://YOUR_COMPUTER_IP:5000/api`
-
-4. Start Expo:
+Start server:
 ```bash
 npm start
 ```
 
-5. Run on device:
-- Press `a` for Android
-- Press `i` for iOS
-- Scan QR code with Expo Go app for physical device
+### 2. Admin Frontend Setup
 
-## 🎨 Design System
-
-### Colors
-- Primary: `#F97316`
-- Background: `#F9FAFB`
-- Text Dark: `#111827`
-- Text Gray: `#6B7280`
-- Surface: `#FFFFFF`
-- Success: `#22C55E`
-- Error: `#EF4444`
-- Border: `#E5E7EB`
-
-### Spacing
-- XS: 8px
-- SM: 16px
-- MD: 24px
-- LG: 32px
-- XL: 48px
-
-## 🔐 Authentication
-
-### Admin Authentication
-- Email + Password login
-- JWT token-based authentication
-- Role-based access control
-
-### User Authentication
-- OTP-based login using mobile number
-- OTP expires in 10 minutes
-- JWT token issued after verification
-- In development mode, OTP is logged to console
-
-## 📡 API Configuration
-
-### Centralized API URL
-
-Both frontends use a centralized API configuration. To change the backend URL:
-
-**Admin Frontend:**
-```javascript
-// admin-frontend/src/config/api.js
-export const API_BASE_URL = 'http://localhost:5000/api';
+```bash
+cd admin-frontend
+npm install
+npm start
 ```
 
-**User Frontend:**
-```javascript
-// user-frontend/src/config/api.js
-export const API_BASE_URL = 'http://localhost:5000/api';
+Access at: `http://localhost:3000`
+
+### 3. User Frontend Setup
+
+```bash
+cd user-frontend
+npm install
+npx expo start
 ```
 
-Change the URL in ONE place and it updates everywhere!
+Scan QR code with Expo Go app on your phone.
 
-## 🛠️ Features
+## 📚 Documentation
 
-### Backend
-- ✅ OTP-based authentication
-- ✅ JWT token management
-- ✅ Role-based authorization
-- ✅ User management (block/unblock)
-- ✅ Category management
-- ✅ Product management with inventory
-- ✅ Order lifecycle (CONFIRMED → SHIPPED → DELIVERED)
-- ✅ Ticket/grievance system
-- ✅ Return/refund management
-- ✅ Soft-delete strategy
-- ✅ Pagination middleware
-- ✅ Rate limiting
-- ✅ Error handling
-- ✅ Request logging
+- **[SETUP_GUIDE.md](./SETUP_GUIDE.md)** - Detailed setup instructions
+- **[API_DOCUMENTATION.md](./API_DOCUMENTATION.md)** - Complete API reference
+- **[ORDER_FLOW_COMPLETE.md](./ORDER_FLOW_COMPLETE.md)** - Order system documentation
 
-### Admin Dashboard
-- ✅ Secure admin login
-- ✅ User management
-- ✅ Product & category management
-- ✅ Order management with status transitions
-- ✅ Ticket handling
-- ✅ Return/refund processing
+## 🔑 Default Admin Credentials
 
-### User Mobile App
-- ✅ OTP-based login
-- ✅ Product browsing
-- ✅ Category filtering
-- ✅ Cart & checkout
-- ✅ Address management
-- ✅ Order tracking
-- ✅ Wishlist
-- ✅ Support tickets
-
-## 📝 API Endpoints
-
-### Authentication
-- `POST /api/auth/admin/login` - Admin login
-- `POST /api/auth/user/send-otp` - Send OTP to mobile
-- `POST /api/auth/user/verify-otp` - Verify OTP and login
-- `GET /api/auth/me` - Get current user
-
-### Products
-- `GET /api/products` - Get all products (with filters)
-- `GET /api/products/:id` - Get product by ID
-- `POST /api/products` - Create product (Admin)
-- `PUT /api/products/:id` - Update product (Admin)
-- `DELETE /api/products/:id` - Delete product (Admin)
-
-### Orders
-- `POST /api/orders` - Create order
-- `GET /api/orders/my-orders` - Get user orders
-- `GET /api/orders/:id` - Get order by ID
-- `PATCH /api/orders/:id/status` - Update order status (Admin)
-
-### Categories
-- `GET /api/categories` - Get all categories
-- `POST /api/categories` - Create category (Admin)
-- `PUT /api/categories/:id` - Update category (Admin)
-
-### Users
-- `GET /api/users` - Get all users (Admin)
-- `PUT /api/users/profile/update` - Update profile
-- `POST /api/users/addresses` - Add address
-- `POST /api/users/wishlist/toggle` - Toggle wishlist
-
-## 🧪 Testing
-
-### Test OTP Login (Development Mode)
-
-When you send OTP in development mode, the OTP will be logged to the backend console:
+After running the backend, a super admin is automatically created:
 
 ```
-📱 OTP for 9876543210: 123456
+Email: superadmin@example.com
+Password: SuperAdmin@123
 ```
 
-Use this OTP to verify and login.
+## 📱 User App Features
 
-## 🔒 Security Features
+### Authentication Flow
+1. Enter mobile number
+2. Receive OTP via email
+3. Verify OTP
+4. Complete registration (first time)
+5. Login automatically
+
+### Shopping Flow
+1. Browse products by category
+2. View product details
+3. Add to cart or buy now
+4. Select delivery address
+5. Choose payment method (COD)
+6. Place order
+7. Track order status
+
+### Order Status Flow
+```
+Pending → Confirmed → Shipped → Delivered
+```
+
+## 🎨 Theme
+
+The app uses a chocolate brown theme:
+- Primary Color: `#704F38`
+- Clean and modern UI
+- Smooth animations
+- Responsive design
+
+## � Security Features
 
 - JWT token authentication
 - Password hashing with bcrypt
-- OTP hashing before storage
-- Rate limiting on auth endpoints
 - Role-based access control
-- Soft-delete strategy (no hard deletes)
-- Request validation
-- Error handling middleware
+- Input validation
+- CORS protection
+- Helmet security headers
+- Token expiration handling
 
-## 📦 Dependencies
+## 📦 Database Models
+
+- **User**: User accounts with addresses and wishlist
+- **Product**: Products with images, sizes, colors, stock
+- **Category**: Product categories with images
+- **Order**: Orders with items, address, payment info
+- **Ticket**: Customer support tickets
+- **Return**: Product return requests
+
+## 🚀 Deployment
 
 ### Backend
-- express
-- mongoose
-- jsonwebtoken
-- bcrypt
-- cors
-- dotenv
-- express-rate-limit
-- morgan
-- helmet
-- compression
+- Deploy to Heroku, Railway, or any Node.js hosting
+- Set environment variables
+- Connect to MongoDB Atlas
 
 ### Admin Frontend
-- react
-- axios
-- react-router-dom (for routing)
+- Build: `npm run build`
+- Deploy to Vercel, Netlify, or any static hosting
 
 ### User Frontend
-- react-native
-- expo
-- axios
-- @react-native-async-storage/async-storage
-- @react-navigation/native
+- Build APK: `expo build:android`
+- Build IPA: `expo build:ios`
+- Or publish to Expo: `expo publish`
 
-## 🎯 Next Steps
+## 🤝 Contributing
 
-1. **Backend**: Start the backend server and seed admin user
-2. **Admin**: Login with default credentials and create categories/products
-3. **User App**: Test OTP login and browse products
-4. **Customize**: Update colors, add features, enhance UI
+This is a private project. For any issues or suggestions, please contact the development team.
 
 ## 📄 License
 
-This project is for educational and portfolio purposes.
+Private and Confidential
 
-## 👨‍💻 Author
+## 👨‍💻 Development Team
 
-Built with ❤️ for learning and demonstration purposes.
+Developed with ❤️ for fashion e-commerce
+
+---
+
+**Note**: Make sure to update the IP address in frontend API services to match your backend server IP address.
