@@ -78,6 +78,30 @@ exports.sendMessage = async (req, res) => {
       .populate('user', 'name email mobile profileImage')
       .populate('messages.sender', 'name profileImage role');
 
+    const latestMessage = updatedChat.messages[updatedChat.messages.length - 1];
+
+    // Emit socket events
+    const io = req.app.get('io');
+    if (io) {
+      // Emit to chat room
+      io.to(`chat_${chatId}`).emit('new_message', {
+        chatId,
+        message: latestMessage,
+      });
+
+      // Notify super admin
+      io.to('super_admin').emit('chat_updated', {
+        chatId,
+        chat: updatedChat,
+      });
+
+      // Notify user
+      io.to(`user_${chat.user._id}`).emit('chat_updated', {
+        chatId,
+        chat: updatedChat,
+      });
+    }
+
     res.status(200).json({
       success: true,
       data: updatedChat,

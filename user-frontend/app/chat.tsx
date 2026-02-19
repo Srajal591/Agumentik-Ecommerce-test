@@ -32,10 +32,39 @@ export default function ChatScreen() {
   const [message, setMessage] = useState('');
   const [currentUser, setCurrentUser] = useState<any>(null);
 
+  // Load chat and user on mount
   useEffect(() => {
     loadChat();
     loadCurrentUser();
   }, []);
+
+  // Poll for new messages every 3 seconds
+  useEffect(() => {
+    if (!chat) return;
+
+    const pollInterval = setInterval(() => {
+      loadChatMessages(chat._id);
+    }, 3000);
+
+    return () => clearInterval(pollInterval);
+  }, [chat]);
+
+  const loadChatMessages = async (chatId: string) => {
+    try {
+      const response = await chatService.getChatById(chatId);
+      const newMessages = response.data.messages || [];
+      
+      // Only update if messages changed
+      if (JSON.stringify(newMessages) !== JSON.stringify(messages)) {
+        setMessages(newMessages);
+        setTimeout(() => {
+          scrollViewRef.current?.scrollToEnd({ animated: true });
+        }, 100);
+      }
+    } catch (error: any) {
+      console.error('Error loading messages:', error);
+    }
+  };
 
   const loadCurrentUser = async () => {
     try {
@@ -126,17 +155,14 @@ export default function ChatScreen() {
         ]}
       >
         {showAvatar && (
-          <Image
-            source={{
-              uri: msg.sender.profileImage || `https://via.placeholder.com/40/704F38/FFFFFF?text=${msg.sender.name?.charAt(0) || 'A'}`,
-            }}
-            style={styles.avatar}
-          />
+          <View style={styles.adminAvatarSmall}>
+            <Ionicons name="shield-checkmark" size={16} color={colors.surface} />
+          </View>
         )}
         
         <View style={[styles.messageBubble, isMyMessage ? styles.myMessage : styles.otherMessage]}>
           {!isMyMessage && (
-            <Text style={styles.senderName}>{msg.sender.name}</Text>
+            <Text style={styles.senderName}>Support Team</Text>
           )}
           
           {msg.image && (
@@ -178,12 +204,13 @@ export default function ChatScreen() {
         </TouchableOpacity>
         
         <View style={styles.headerCenter}>
-          <Image
-            source={{ uri: 'https://via.placeholder.com/40/704F38/FFFFFF?text=S' }}
-            style={styles.headerAvatar}
-          />
+          <View style={styles.headerAvatarContainer}>
+            <View style={styles.adminAvatar}>
+              <Ionicons name="shield-checkmark" size={24} color={colors.surface} />
+            </View>
+          </View>
           <View>
-            <Text style={styles.headerTitle}>Support</Text>
+            <Text style={styles.headerTitle}>Support Team</Text>
             <Text style={styles.headerSubtitle}>Online</Text>
           </View>
         </View>
@@ -283,6 +310,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginLeft: spacing.md,
   },
+  headerAvatarContainer: {
+    marginRight: spacing.sm,
+  },
+  adminAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   headerAvatar: {
     width: 40,
     height: 40,
@@ -339,6 +377,15 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginRight: spacing.xs,
     backgroundColor: colors.backgroundDark,
+  },
+  adminAvatarSmall: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: spacing.xs,
+    backgroundColor: colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   messageBubble: {
     maxWidth: '75%',

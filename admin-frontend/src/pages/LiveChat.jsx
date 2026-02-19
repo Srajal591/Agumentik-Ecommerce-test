@@ -10,16 +10,38 @@ const LiveChat = () => {
   const [loading, setLoading] = useState(true);
   const [sending, setSending] = useState(false);
   const messagesEndRef = useRef(null);
+  const selectedChatRef = useRef(null);
 
+  // Keep selectedChat in ref for polling
+  useEffect(() => {
+    selectedChatRef.current = selectedChat;
+  }, [selectedChat]);
+
+  // Initial load
   useEffect(() => {
     loadChats();
-    const interval = setInterval(loadChats, 5000); // Refresh every 5 seconds
-    return () => clearInterval(interval);
   }, []);
 
+  // Poll for chat list updates every 5 seconds
+  useEffect(() => {
+    const pollInterval = setInterval(() => {
+      loadChats();
+    }, 5000);
+
+    return () => clearInterval(pollInterval);
+  }, []);
+
+  // Poll for messages when a chat is selected
   useEffect(() => {
     if (selectedChat) {
       loadChatMessages(selectedChat._id);
+      
+      // Poll for new messages every 3 seconds
+      const pollInterval = setInterval(() => {
+        loadChatMessages(selectedChat._id);
+      }, 3000);
+
+      return () => clearInterval(pollInterval);
     }
   }, [selectedChat]);
 
@@ -45,7 +67,14 @@ const LiveChat = () => {
   const loadChatMessages = async (chatId) => {
     try {
       const response = await chatService.getChatById(chatId);
-      setMessages(response.data.messages || []);
+      const newMessages = response.data.messages || [];
+      
+      // Only update if messages changed to avoid unnecessary re-renders
+      if (JSON.stringify(newMessages) !== JSON.stringify(messages)) {
+        setMessages(newMessages);
+        setTimeout(() => scrollToBottom(), 100);
+      }
+      
       await chatService.markAsRead(chatId);
     } catch (error) {
       console.error('Error loading messages:', error);
@@ -58,10 +87,22 @@ const LiveChat = () => {
 
     try {
       setSending(true);
+      
+      // Send via API (which will trigger socket events)
       const response = await chatService.sendMessage(selectedChat._id, message.trim());
-      setMessages(response.data.messages || []);
+      
+      // Update local messages immediately
+      if (response.data && response.data.messages) {
+        setMessages(response.data.messages);
+      }
+      
       setMessage('');
-      loadChats(); // Refresh chat list
+      
+      // Refresh chat list
+      loadChats();
+      
+      // Scroll to bottom
+      setTimeout(() => scrollToBottom(), 100);
     } catch (error) {
       console.error('Error sending message:', error);
       alert('Failed to send message');
