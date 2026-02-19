@@ -7,7 +7,7 @@ import {
   MdCategory, 
   MdShoppingBag, 
   MdShoppingCart,
-  MdConfirmationNumber,
+  MdChat,
   MdAssignmentReturn,
   MdLogout
 } from 'react-icons/md';
@@ -33,7 +33,7 @@ const Sidebar = ({ setIsAuthenticated, isOpen, onClose }) => {
     { path: '/super-admin/categories', label: 'Categories', icon: MdCategory },
     { path: '/super-admin/products', label: 'Products', icon: MdShoppingBag },
     { path: '/super-admin/orders', label: 'Orders', icon: MdShoppingCart },
-    { path: '/super-admin/tickets', label: 'Tickets', icon: MdConfirmationNumber },
+    { path: '/super-admin/live-chat', label: 'Live Chat', icon: MdChat },
     { path: '/super-admin/returns', label: 'Returns', icon: MdAssignmentReturn },
   ];
 

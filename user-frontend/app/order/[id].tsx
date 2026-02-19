@@ -57,11 +57,9 @@ export default function OrderDetailsScreen() {
     try {
       setLoading(true);
       const response = await orderService.getOrderById(id as string);
-      console.log('Order data:', response.data);
-      console.log('Return Status:', response.data.returnStatus);
-      console.log('Return ID:', response.data.returnId);
       setOrder(response.data);
     } catch (error: any) {
+      console.error('Failed to load order:', error.message);
       Alert.alert('Error', error.message);
       router.back();
     } finally {
@@ -184,10 +182,6 @@ export default function OrderDetailsScreen() {
   const allSteps = order.returnStatus 
     ? [...statusSteps, 'return'] 
     : statusSteps;
-  
-  console.log('All steps:', allSteps);
-  console.log('Current order status:', order.orderStatus);
-  console.log('Return status:', order.returnStatus);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -389,7 +383,10 @@ export default function OrderDetailsScreen() {
             <Text style={styles.returnButtonText}>Return Order</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity style={styles.helpButton}>
+        <TouchableOpacity 
+          style={styles.helpButton}
+          onPress={() => router.push(`/chat?orderId=${order._id}`)}
+        >
           <Ionicons name="help-circle-outline" size={20} color={colors.primary} />
           <Text style={styles.helpButtonText}>Need Help?</Text>
         </TouchableOpacity>

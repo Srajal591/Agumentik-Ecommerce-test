@@ -2,6 +2,8 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { API_BASE_URL } from '../config/api';
 
+const TOKEN_KEY = '@auth_token';
+
 // Create axios instance with base configuration
 const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -14,7 +16,7 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (config) => {
     try {
-      const token = await AsyncStorage.getItem('token');
+      const token = await AsyncStorage.getItem(TOKEN_KEY);
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -37,8 +39,8 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401) {
       // Unauthorized - clear token
       try {
-        await AsyncStorage.removeItem('token');
-        await AsyncStorage.removeItem('user');
+        await AsyncStorage.removeItem(TOKEN_KEY);
+        await AsyncStorage.removeItem('@user_data');
         // Navigation will be handled by the app
       } catch (err) {
         console.error('Error clearing storage:', err);

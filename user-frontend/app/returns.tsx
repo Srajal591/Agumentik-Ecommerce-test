@@ -27,7 +27,6 @@ export default function ReturnsScreen() {
     try {
       setLoading(true);
       const response = await getUserReturns();
-      console.log('Returns response:', response);
       
       // Handle the response structure
       if (response && response.success && response.data) {
@@ -40,8 +39,7 @@ export default function ReturnsScreen() {
         setReturns([]);
       }
     } catch (error: any) {
-      console.error('Error loading returns:', error);
-      console.error('Error details:', error.response?.data || error.message);
+      console.error('Error loading returns:', error.response?.data || error.message);
       setReturns([]);
     } finally {
       setLoading(false);

@@ -12,13 +12,16 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
 import { authService } from '../../src/api/authService';
+import { profileService } from '../../src/api/profileService';
 
 export default function ProfileScreen() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     loadUserData();
@@ -27,12 +30,47 @@ export default function ProfileScreen() {
   const loadUserData = async () => {
     try {
       setLoading(true);
-      const storedUser = await authService.getStoredUser();
-      setUser(storedUser);
+      const response = await profileService.getProfile();
+      setUser(response.data);
+      // Also update stored user
+      await authService.storeUser(response.data);
     } catch (error) {
       console.error('Error loading user data:', error);
+      // Fallback to stored user
+      const storedUser = await authService.getStoredUser();
+      setUser(storedUser);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleImagePick = async () => {
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.8,
+      });
+
+      if (!result.canceled && result.assets[0]) {
+        const image = {
+          uri: result.assets[0].uri,
+          type: 'image/jpeg',
+          name: 'profile.jpg',
+        };
+
+        setUploading(true);
+        const response = await profileService.uploadProfileImage(image);
+        setUser(response.data);
+        await authService.storeUser(response.data);
+        Alert.alert('Success', 'Profile image updated successfully');
+      }
+    } catch (error: any) {
+      console.error('Error uploading image:', error);
+      Alert.alert('Error', 'Failed to upload image');
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -139,11 +177,21 @@ export default function ProfileScreen() {
           <View style={styles.profileCard}>
             <View style={styles.avatarContainer}>
               <Image
-                source={{ uri: 'https://via.placeholder.com/100/704F38/FFFFFF?text=' + (user?.name?.charAt(0) || 'U') }}
+                source={{ 
+                  uri: user?.profileImage || `https://via.placeholder.com/100/704F38/FFFFFF?text=${user?.name?.charAt(0) || 'U'}` 
+                }}
                 style={styles.avatar}
               />
-              <TouchableOpacity style={styles.editAvatarBtn}>
-                <Ionicons name="camera" size={16} color={colors.surface} />
+              <TouchableOpacity 
+                style={styles.editAvatarBtn}
+                onPress={handleImagePick}
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <ActivityIndicator size="small" color={colors.surface} />
+                ) : (
+                  <Ionicons name="camera" size={16} color={colors.surface} />
+                )}
               </TouchableOpacity>
             </View>
             <Text style={styles.userName}>{user?.name || 'User'}</Text>

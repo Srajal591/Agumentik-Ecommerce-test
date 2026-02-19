@@ -123,4 +123,13 @@ export const authService = {
       return null;
     }
   },
+
+  // Store user data
+  storeUser: async (user: any) => {
+    try {
+      await AsyncStorage.setItem(USER_KEY, JSON.stringify(user));
+    } catch (error) {
+      console.error('Error storing user:', error);
+    }
+  },
 };
