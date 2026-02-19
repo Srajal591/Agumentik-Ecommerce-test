@@ -68,6 +68,14 @@ const orderSchema = new mongoose.Schema(
       enum: ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'],
       default: 'pending',
     },
+    returnStatus: {
+      type: String,
+      enum: ['requested', 'approved', 'rejected', 'picked_up', 'completed'],
+    },
+    returnId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Return',
+    },
     trackingNumber: String,
     shippedAt: Date,
     deliveredAt: Date,

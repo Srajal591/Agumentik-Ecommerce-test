@@ -74,7 +74,8 @@ class OrderService {
   async getOrderById(orderId) {
     const order = await Order.findOne({ _id: orderId, isDeleted: false })
       .populate('user', 'name mobile email')
-      .populate('items.product');
+      .populate('items.product')
+      .populate('returnId'); // Populate return information
 
     if (!order) {
       throw new Error('Order not found');
@@ -87,6 +88,7 @@ class OrderService {
   async getUserOrders(userId, page, limit, skip) {
     const orders = await Order.find({ user: userId, isDeleted: false })
       .populate('items.product', 'name images')
+      .populate('returnId', 'status returnNumber') // Populate return info
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit);

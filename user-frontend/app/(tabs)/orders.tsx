@@ -22,6 +22,8 @@ interface Order {
   items: any[];
   total: number;
   orderStatus: string;
+  returnStatus?: string;
+  returnId?: string;
   createdAt: string;
 }
 
@@ -91,6 +93,23 @@ export default function OrdersScreen() {
         return 'close-circle';
       default:
         return 'ellipse';
+    }
+  };
+
+  const getReturnStatusColor = (status: string) => {
+    switch (status) {
+      case 'requested':
+        return colors.warning;
+      case 'approved':
+        return colors.info;
+      case 'rejected':
+        return colors.error;
+      case 'picked_up':
+        return colors.primary;
+      case 'completed':
+        return colors.success;
+      default:
+        return colors.textSecondary;
     }
   };
 
@@ -164,20 +183,39 @@ export default function OrdersScreen() {
                   })}
                 </Text>
               </View>
-              <View
-                style={[
-                  styles.statusBadge,
-                  { backgroundColor: getStatusColor(order.orderStatus) + '20' },
-                ]}>
-                <Ionicons
-                  name={getStatusIcon(order.orderStatus) as any}
-                  size={14}
-                  color={getStatusColor(order.orderStatus)}
-                />
-                <Text
-                  style={[styles.statusText, { color: getStatusColor(order.orderStatus) }]}>
-                  {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
-                </Text>
+              <View style={styles.statusContainer}>
+                <View
+                  style={[
+                    styles.statusBadge,
+                    { backgroundColor: getStatusColor(order.orderStatus) + '20' },
+                  ]}>
+                  <Ionicons
+                    name={getStatusIcon(order.orderStatus) as any}
+                    size={14}
+                    color={getStatusColor(order.orderStatus)}
+                  />
+                  <Text
+                    style={[styles.statusText, { color: getStatusColor(order.orderStatus) }]}>
+                    {order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1)}
+                  </Text>
+                </View>
+                {order.returnStatus && (
+                  <View
+                    style={[
+                      styles.returnBadge,
+                      { backgroundColor: getReturnStatusColor(order.returnStatus) + '20' },
+                    ]}>
+                    <Ionicons
+                      name="return-down-back"
+                      size={12}
+                      color={getReturnStatusColor(order.returnStatus)}
+                    />
+                    <Text
+                      style={[styles.returnText, { color: getReturnStatusColor(order.returnStatus) }]}>
+                      {order.returnStatus.charAt(0).toUpperCase() + order.returnStatus.slice(1).replace('_', ' ')}
+                    </Text>
+                  </View>
+                )}
               </View>
             </View>
 
@@ -311,6 +349,10 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: colors.textSecondary,
   },
+  statusContainer: {
+    alignItems: 'flex-end',
+    gap: spacing.xs,
+  },
   statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -321,6 +363,18 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 12,
+    fontWeight: '600',
+  },
+  returnBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 4,
+    borderRadius: borderRadius.full,
+    gap: 3,
+  },
+  returnText: {
+    fontSize: 10,
     fontWeight: '600',
   },
   orderBody: {

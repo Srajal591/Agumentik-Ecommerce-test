@@ -77,6 +77,14 @@ class ReturnService {
       pickupAddress: returnData.pickupAddress || order.shippingAddress,
     });
 
+    // Update order with return information
+    await Order.findByIdAndUpdate(returnData.order, {
+      $set: {
+        returnStatus: 'requested',
+        returnId: returnRequest._id,
+      }
+    });
+
     return await returnRequest.populate('order user items.product');
   }
 
@@ -155,14 +163,36 @@ class ReturnService {
       if (pickupScheduledAt) {
         returnRequest.pickupScheduledAt = pickupScheduledAt;
       }
+      
+      // Update order with return information
+      await Order.findByIdAndUpdate(returnRequest.order._id, {
+        $set: {
+          returnStatus: 'approved',
+          returnId: returnRequest._id,
+        }
+      });
     }
 
     if (status === 'picked_up' && oldStatus === 'approved') {
       returnRequest.pickedUpAt = new Date();
+      
+      // Update order return status
+      await Order.findByIdAndUpdate(returnRequest.order._id, {
+        $set: {
+          returnStatus: 'picked_up',
+        }
+      });
     }
 
     if (status === 'rejected') {
       returnRequest.rejectedAt = new Date();
+      
+      // Update order return status
+      await Order.findByIdAndUpdate(returnRequest.order._id, {
+        $set: {
+          returnStatus: 'rejected',
+        }
+      });
     }
 
     if (status === 'completed' && oldStatus === 'picked_up') {
@@ -172,6 +202,13 @@ class ReturnService {
       if (returnRequest.type === 'refund' || returnRequest.type === 'return') {
         await Order.findByIdAndUpdate(returnRequest.order._id, {
           paymentStatus: 'refunded',
+          returnStatus: 'completed',
+        });
+      } else {
+        await Order.findByIdAndUpdate(returnRequest.order._id, {
+          $set: {
+            returnStatus: 'completed',
+          }
         });
       }
 

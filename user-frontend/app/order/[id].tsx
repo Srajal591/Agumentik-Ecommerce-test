@@ -37,6 +37,8 @@ interface Order {
   paymentMethod: string;
   paymentStatus: string;
   orderStatus: string;
+  returnStatus?: string;
+  returnId?: string;
   trackingNumber?: string;
   createdAt: string;
 }
@@ -55,6 +57,9 @@ export default function OrderDetailsScreen() {
     try {
       setLoading(true);
       const response = await orderService.getOrderById(id as string);
+      console.log('Order data:', response.data);
+      console.log('Return Status:', response.data.returnStatus);
+      console.log('Return ID:', response.data.returnId);
       setOrder(response.data);
     } catch (error: any) {
       Alert.alert('Error', error.message);
@@ -98,6 +103,40 @@ export default function OrderDetailsScreen() {
     }
   };
 
+  const getReturnStatusColor = (status: string) => {
+    switch (status) {
+      case 'requested':
+        return colors.warning;
+      case 'approved':
+        return colors.info;
+      case 'rejected':
+        return colors.error;
+      case 'picked_up':
+        return colors.primary;
+      case 'completed':
+        return colors.success;
+      default:
+        return colors.textSecondary;
+    }
+  };
+
+  const getReturnStatusIcon = (status: string) => {
+    switch (status) {
+      case 'requested':
+        return 'time-outline';
+      case 'approved':
+        return 'checkmark-circle-outline';
+      case 'rejected':
+        return 'close-circle-outline';
+      case 'picked_up':
+        return 'cube-outline';
+      case 'completed':
+        return 'checkmark-done-circle-outline';
+      default:
+        return 'return-down-back-outline';
+    }
+  };
+
   const renderTrackingStep = (step: string, isActive: boolean, isCompleted: boolean) => (
     <View style={styles.trackingStep}>
       <View style={styles.trackingIconContainer}>
@@ -106,6 +145,7 @@ export default function OrderDetailsScreen() {
             styles.trackingIcon,
             isCompleted && styles.trackingIconCompleted,
             isActive && styles.trackingIconActive,
+            step === 'Return' && isActive && styles.trackingIconReturn,
           ]}
         >
           {isCompleted ? (
@@ -114,10 +154,12 @@ export default function OrderDetailsScreen() {
             <View style={styles.trackingDot} />
           )}
         </View>
-        {step !== 'delivered' && <View style={styles.trackingLine} />}
+        {step !== 'Delivered' && step !== 'Return' && <View style={styles.trackingLine} />}
       </View>
       <View style={styles.trackingContent}>
-        <Text style={[styles.trackingLabel, isActive && styles.trackingLabelActive]}>{step}</Text>
+        <Text style={[styles.trackingLabel, isActive && styles.trackingLabelActive]}>
+          {step}
+        </Text>
       </View>
     </View>
   );
@@ -137,6 +179,15 @@ export default function OrderDetailsScreen() {
 
   const statusSteps = ['pending', 'confirmed', 'shipped', 'delivered'];
   const currentStepIndex = statusSteps.indexOf(order.orderStatus);
+  
+  // Add return step if return status exists
+  const allSteps = order.returnStatus 
+    ? [...statusSteps, 'return'] 
+    : statusSteps;
+  
+  console.log('All steps:', allSteps);
+  console.log('Current order status:', order.orderStatus);
+  console.log('Return status:', order.returnStatus);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -174,9 +225,21 @@ export default function OrderDetailsScreen() {
           {/* Tracking */}
           {order.orderStatus !== 'cancelled' && (
             <View style={styles.trackingContainer}>
-              {statusSteps.map((step, index) => {
-                const isCompleted = index < currentStepIndex;
-                const isActive = index === currentStepIndex;
+              {allSteps.map((step, index) => {
+                let isCompleted, isActive;
+                
+                if (step === 'return') {
+                  // Return step logic
+                  const returnStatuses = ['requested', 'approved', 'picked_up', 'completed'];
+                  const currentReturnIndex = returnStatuses.indexOf(order.returnStatus || '');
+                  isCompleted = currentReturnIndex === returnStatuses.length - 1; // completed
+                  isActive = order.returnStatus && !isCompleted;
+                } else {
+                  // Regular order steps
+                  isCompleted = index < currentStepIndex;
+                  isActive = index === currentStepIndex;
+                }
+                
                 return (
                   <View key={step}>
                     {renderTrackingStep(
@@ -197,6 +260,29 @@ export default function OrderDetailsScreen() {
                 <Text style={styles.trackingNumberLabel}>Tracking Number</Text>
                 <Text style={styles.trackingNumberValue}>{order.trackingNumber}</Text>
               </View>
+            </View>
+          )}
+
+          {/* Return Status Info */}
+          {order.returnStatus && (
+            <View style={styles.returnInfoCard}>
+              <View style={styles.returnInfoHeader}>
+                <Ionicons name="information-circle" size={18} color={colors.warning} />
+                <Text style={styles.returnInfoText}>
+                  Return Status: <Text style={styles.returnInfoStatus}>
+                    {order.returnStatus.charAt(0).toUpperCase() + order.returnStatus.slice(1).replace('_', ' ')}
+                  </Text>
+                </Text>
+              </View>
+              {order.returnId && (
+                <TouchableOpacity 
+                  style={styles.viewReturnLink}
+                  onPress={() => router.push('/returns')}
+                >
+                  <Text style={styles.viewReturnLinkText}>View Return Details</Text>
+                  <Ionicons name="arrow-forward" size={14} color={colors.primary} />
+                </TouchableOpacity>
+              )}
             </View>
           )}
         </View>
@@ -294,7 +380,7 @@ export default function OrderDetailsScreen() {
 
       {/* Action Buttons */}
       <View style={styles.footer}>
-        {order.orderStatus === 'delivered' && (
+        {order.orderStatus === 'delivered' && !order.returnStatus && (
           <TouchableOpacity 
             style={styles.returnButton}
             onPress={() => router.push(`/return/${order._id}`)}
@@ -360,6 +446,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg,
     marginBottom: spacing.lg,
     ...shadows.medium,
+    marginHorizontal: 2, // Prevent overflow
   },
   statusHeader: {
     flexDirection: 'row',
@@ -418,6 +505,10 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     borderColor: colors.primary,
   },
+  trackingIconReturn: {
+    backgroundColor: colors.warning,
+    borderColor: colors.warning,
+  },
   trackingDot: {
     width: 8,
     height: 8,
@@ -456,6 +547,40 @@ const styles = StyleSheet.create({
   },
   trackingNumberValue: {
     fontSize: 14,
+    fontWeight: '600',
+    color: colors.primary,
+  },
+  returnInfoCard: {
+    backgroundColor: colors.warningLight,
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
+    marginTop: spacing.md,
+    borderLeftWidth: 3,
+    borderLeftColor: colors.warning,
+  },
+  returnInfoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    marginBottom: spacing.xs,
+  },
+  returnInfoText: {
+    fontSize: 13,
+    color: colors.textPrimary,
+    fontWeight: '500',
+  },
+  returnInfoStatus: {
+    fontWeight: 'bold',
+    color: colors.warning,
+  },
+  viewReturnLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: spacing.xs,
+  },
+  viewReturnLinkText: {
+    fontSize: 12,
     fontWeight: '600',
     color: colors.primary,
   },

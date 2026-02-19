@@ -26,48 +26,39 @@ export default function ProductCard({
 }: ProductCardProps) {
   return (
     <TouchableOpacity style={styles.card} onPress={onPress} activeOpacity={0.8}>
-      <Image source={{ uri: product.image }} style={styles.image} />
-      
-      {onToggleWishlist && (
-        <TouchableOpacity
-          style={styles.wishlistBtn}
-          onPress={(e) => {
-            e.stopPropagation();
-            onToggleWishlist();
-          }}>
-          <Ionicons
-            name={isWishlisted ? 'heart' : 'heart-outline'}
-            size={20}
-            color={colors.error}
-          />
-        </TouchableOpacity>
-      )}
+      <View style={styles.imageContainer}>
+        <Image source={{ uri: product.image }} style={styles.image} />
+        
+        {onToggleWishlist && (
+          <TouchableOpacity
+            style={styles.wishlistBtn}
+            onPress={(e) => {
+              e.stopPropagation();
+              onToggleWishlist();
+            }}>
+            <Ionicons
+              name={isWishlisted ? 'heart' : 'heart-outline'}
+              size={22}
+              color={isWishlisted ? colors.error : colors.textSecondary}
+            />
+          </TouchableOpacity>
+        )}
+      </View>
 
       <View style={styles.info}>
-        <Text style={styles.name} numberOfLines={2}>
+        <Text style={styles.name} numberOfLines={1}>
           {product.name}
         </Text>
         
-        {product.rating && (
-          <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={14} color={colors.warning} />
-            <Text style={styles.ratingText}>{product.rating}</Text>
-          </View>
-        )}
-        
-        <Text style={styles.price}>₹{product.price}</Text>
-        
-        {onAddToCart && (
-          <TouchableOpacity
-            style={styles.addToCartBtn}
-            onPress={(e) => {
-              e.stopPropagation();
-              onAddToCart();
-            }}>
-            <Ionicons name="cart-outline" size={18} color={colors.surface} />
-            <Text style={styles.addToCartText}>Add to Cart</Text>
-          </TouchableOpacity>
-        )}
+        <View style={styles.priceRow}>
+          <Text style={styles.price}>₹{product.price}</Text>
+          {product.rating && (
+            <View style={styles.ratingContainer}>
+              <Ionicons name="star" size={12} color={colors.warning} />
+              <Text style={styles.ratingText}>{product.rating}</Text>
+            </View>
+          )}
+        </View>
       </View>
     </TouchableOpacity>
   );
@@ -76,26 +67,33 @@ export default function ProductCard({
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.lg,
+    borderRadius: borderRadius.xl,
     overflow: 'hidden',
     ...shadows.medium,
+    marginBottom: spacing.sm,
+  },
+  imageContainer: {
+    position: 'relative',
+    width: '100%',
+    aspectRatio: 0.75,
+    backgroundColor: colors.backgroundDark,
   },
   image: {
     width: '100%',
-    height: 200,
-    backgroundColor: colors.backgroundDark,
+    height: '100%',
+    resizeMode: 'cover',
   },
   wishlistBtn: {
     position: 'absolute',
     top: spacing.sm,
     right: spacing.sm,
-    width: 32,
-    height: 32,
+    width: 36,
+    height: 36,
     borderRadius: borderRadius.full,
     backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
-    ...shadows.small,
+    ...shadows.medium,
   },
   info: {
     padding: spacing.sm,
@@ -104,36 +102,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: spacing.xs,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  price: {
+    fontSize: 15,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
   },
   ratingContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    gap: 2,
   },
   ratingText: {
-    fontSize: 12,
-    color: colors.textSecondary,
-    marginLeft: 4,
-  },
-  price: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: colors.primary,
-    marginBottom: spacing.sm,
-  },
-  addToCartBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.xs,
-    borderRadius: borderRadius.sm,
-    gap: 4,
-  },
-  addToCartText: {
-    color: colors.surface,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: '600',
+    color: colors.textPrimary,
   },
 });
