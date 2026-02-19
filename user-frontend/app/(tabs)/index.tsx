@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -11,6 +11,7 @@ import {
   FlatList,
   RefreshControl,
   Alert,
+  Dimensions,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -29,11 +30,70 @@ export default function HomeScreen() {
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
+  const [userName, setUserName] = useState('Guest');
+  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const bannerData = [
+    {
+      id: 1,
+      image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=800&q=80',
+      title: 'New Collection',
+      subtitle: 'Discount 50% for\nthe first transaction',
+    },
+    {
+      id: 2,
+      image: 'https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=800&q=80',
+      title: 'Summer Sale',
+      subtitle: 'Up to 70% OFF\non selected items',
+    },
+    {
+      id: 3,
+      image: 'https://images.unsplash.com/photo-1445205170230-053b83016050?w=800&q=80',
+      title: 'Trending Now',
+      subtitle: 'Explore the latest\nfashion trends',
+    },
+  ];
 
   useEffect(() => {
     fetchData();
     loadWishlistStatus();
+    loadUserName();
   }, []);
+
+  // Auto-scroll banner
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentBannerIndex((prevIndex) => {
+        const nextIndex = (prevIndex + 1) % bannerData.length;
+        
+        // Scroll to next banner
+        if (scrollViewRef.current) {
+          const screenWidth = Dimensions.get('window').width - spacing.md * 2;
+          scrollViewRef.current.scrollTo({
+            x: nextIndex * screenWidth,
+            animated: true,
+          });
+        }
+        
+        return nextIndex;
+      });
+    }, 4000); // Change every 4 seconds
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const loadUserName = async () => {
+    try {
+      const { authService } = await import('../../src/api/authService');
+      const user = await authService.getStoredUser();
+      if (user && user.name) {
+        setUserName(user.name);
+      }
+    } catch (error) {
+      console.error('Error loading user name:', error);
+    }
+  };
 
   const fetchData = async () => {
     try {
@@ -189,9 +249,9 @@ export default function HomeScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <View>
+          <View style={styles.headerLeft}>
             <Text style={styles.greeting}>Hello! 👋</Text>
-            <Text style={styles.welcomeText}>Welcome to Fashion Store</Text>
+            <Text style={styles.welcomeText}>Welcome, {userName}</Text>
           </View>
           <View style={styles.headerActions}>
             <TouchableOpacity 
@@ -211,13 +271,13 @@ export default function HomeScreen() {
           <Ionicons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
           <TextInput
             style={styles.searchInput}
-            placeholder="Search products..."
+            placeholder={`Search products, ${userName}...`}
             placeholderTextColor={colors.textLight}
             value={searchQuery}
             onChangeText={setSearchQuery}
           />
           <TouchableOpacity style={styles.filterBtn}>
-            <Ionicons name="options-outline" size={20} color={colors.primary} />
+            <Ionicons name="options-outline" size={20} color={colors.surface} />
           </TouchableOpacity>
         </View>
       </View>
@@ -265,14 +325,46 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {/* Banner */}
-          <View style={styles.banner}>
-            <View style={styles.bannerContent}>
-              <Text style={styles.bannerTitle}>Summer Sale</Text>
-              <Text style={styles.bannerSubtitle}>Up to 50% OFF</Text>
-              <TouchableOpacity style={styles.bannerBtn}>
-                <Text style={styles.bannerBtnText}>Shop Now</Text>
-              </TouchableOpacity>
+          {/* Banner Carousel */}
+          <View style={styles.bannerContainer}>
+            <ScrollView
+              ref={scrollViewRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={(event) => {
+                const index = Math.round(
+                  event.nativeEvent.contentOffset.x / event.nativeEvent.layoutMeasurement.width
+                );
+                setCurrentBannerIndex(index);
+              }}
+              scrollEventThrottle={16}>
+              {bannerData.map((banner) => (
+                <View key={banner.id} style={styles.banner}>
+                  <Image source={{ uri: banner.image }} style={styles.bannerImage} />
+                  <View style={styles.bannerOverlay} />
+                  <View style={styles.bannerContent}>
+                    <Text style={styles.bannerTitle}>{banner.title}</Text>
+                    <Text style={styles.bannerSubtitle}>{banner.subtitle}</Text>
+                    <TouchableOpacity style={styles.bannerBtn}>
+                      <Text style={styles.bannerBtnText}>Shop Now</Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+            
+            {/* Dots Indicator */}
+            <View style={styles.dotsContainer}>
+              {bannerData.map((_, index) => (
+                <View
+                  key={index}
+                  style={[
+                    styles.dot,
+                    currentBannerIndex === index ? styles.activeDot : styles.inactiveDot,
+                  ]}
+                />
+              ))}
             </View>
           </View>
 
@@ -345,13 +437,16 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: spacing.md,
   },
+  headerLeft: {
+    flex: 1,
+  },
   greeting: {
     fontSize: 14,
     color: colors.textSecondary,
     fontWeight: '500',
   },
   welcomeText: {
-    fontSize: 22,
+    fontSize: 20,
     fontWeight: 'bold',
     color: colors.textPrimary,
     marginTop: 4,
@@ -395,6 +490,12 @@ const styles = StyleSheet.create({
   },
   filterBtn: {
     marginLeft: spacing.sm,
+    backgroundColor: colors.primary,
+    width: 36,
+    height: 36,
+    borderRadius: borderRadius.md,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     flex: 1,
@@ -450,44 +551,83 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
   },
-  banner: {
+  bannerContainer: {
     marginHorizontal: spacing.md,
     marginTop: spacing.lg,
-    height: 180,
+    height: 200,
     borderRadius: borderRadius.xl,
-    backgroundColor: colors.primary,
     overflow: 'hidden',
     ...shadows.large,
+    position: 'relative',
+  },
+  banner: {
+    width: Dimensions.get('window').width - spacing.md * 2,
+    height: 200,
+    position: 'relative',
+  },
+  bannerImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'cover',
+    position: 'absolute',
+  },
+  bannerOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(112, 79, 56, 0.7)',
   },
   bannerContent: {
     flex: 1,
     padding: spacing.lg,
     justifyContent: 'center',
+    zIndex: 1,
   },
   bannerTitle: {
-    fontSize: 32,
+    fontSize: 28,
     fontWeight: 'bold',
     color: colors.surface,
-    marginBottom: 6,
+    marginBottom: 8,
   },
   bannerSubtitle: {
-    fontSize: 18,
+    fontSize: 15,
     color: colors.surface,
-    marginBottom: spacing.md,
-    fontWeight: '500',
+    fontWeight: '400',
+    lineHeight: 22,
   },
   bannerBtn: {
-    backgroundColor: colors.surface,
+    backgroundColor: colors.primary,
     paddingHorizontal: spacing.xl,
     paddingVertical: spacing.md,
     borderRadius: borderRadius.lg,
     alignSelf: 'flex-start',
+    marginTop: spacing.md,
     ...shadows.small,
   },
   bannerBtnText: {
-    color: colors.primary,
+    color: colors.surface,
     fontWeight: 'bold',
     fontSize: 15,
+  },
+  dotsContainer: {
+    position: 'absolute',
+    bottom: 12,
+    left: 0,
+    right: 0,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 6,
+  },
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+  },
+  activeDot: {
+    backgroundColor: colors.surface,
+    width: 24,
+  },
+  inactiveDot: {
+    backgroundColor: 'rgba(255, 255, 255, 0.5)',
   },
   productsList: {
     paddingRight: spacing.md,
