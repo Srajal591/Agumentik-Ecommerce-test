@@ -155,8 +155,13 @@ export default function ChatScreen() {
         ]}
       >
         {showAvatar && (
-          <View style={styles.adminAvatarSmall}>
-            <Ionicons name="shield-checkmark" size={16} color={colors.surface} />
+          <View style={styles.adminAvatarSmallContainer}>
+            <View style={styles.adminAvatarSmallInner}>
+              <Ionicons name="person" size={14} color={colors.primary} />
+            </View>
+            <View style={styles.adminBadgeSmall}>
+              <Ionicons name="shield-checkmark" size={8} color="#704F38" />
+            </View>
           </View>
         )}
         
@@ -205,8 +210,13 @@ export default function ChatScreen() {
         
         <View style={styles.headerCenter}>
           <View style={styles.headerAvatarContainer}>
-            <View style={styles.adminAvatar}>
-              <Ionicons name="shield-checkmark" size={24} color={colors.surface} />
+            <View style={styles.adminAvatarHeader}>
+              <View style={styles.adminAvatarInner}>
+                <Ionicons name="person" size={20} color={colors.primary} />
+              </View>
+              <View style={styles.adminBadge}>
+                <Ionicons name="shield-checkmark" size={12} color="#704F38" />
+              </View>
             </View>
           </View>
           <View>
@@ -313,6 +323,36 @@ const styles = StyleSheet.create({
   headerAvatarContainer: {
     marginRight: spacing.sm,
   },
+  adminAvatarHeader: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  adminAvatarInner: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  adminBadge: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: '#FFD700',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: colors.primary,
+  },
   adminAvatar: {
     width: 40,
     height: 40,
@@ -377,6 +417,36 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     marginRight: spacing.xs,
     backgroundColor: colors.backgroundDark,
+  },
+  adminAvatarSmallContainer: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    marginRight: spacing.xs,
+    position: 'relative',
+  },
+  adminAvatarSmallInner: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: colors.surface,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  adminBadgeSmall: {
+    position: 'absolute',
+    bottom: -2,
+    right: -2,
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: '#FFD700',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: colors.surface,
   },
   adminAvatarSmall: {
     width: 32,
