@@ -22,10 +22,27 @@ export default function ProfileScreen() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [stats, setStats] = useState({
+    ordersCount: 0,
+    wishlistCount: 0,
+    addressesCount: 0,
+  });
 
   useEffect(() => {
     loadUserData();
+    loadUserStats();
   }, []);
+
+  const loadUserStats = async () => {
+    try {
+      const response = await profileService.getUserStats();
+      if (response.success) {
+        setStats(response.data);
+      }
+    } catch (error) {
+      console.error('Error loading stats:', error);
+    }
+  };
 
   const loadUserData = async () => {
     try {
@@ -188,15 +205,15 @@ export default function ProfileScreen() {
         {/* Stats */}
         <View style={styles.statsContainer}>
           <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/orders')}>
-            <Text style={styles.statValue}>12</Text>
+            <Text style={styles.statValue}>{stats.ordersCount}</Text>
             <Text style={styles.statLabel}>Orders</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.statCard} onPress={() => router.push('/wishlist')}>
-            <Text style={styles.statValue}>8</Text>
+            <Text style={styles.statValue}>{stats.wishlistCount}</Text>
             <Text style={styles.statLabel}>Wishlist</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.statCard} onPress={() => router.push('/address')}>
-            <Text style={styles.statValue}>3</Text>
+            <Text style={styles.statValue}>{stats.addressesCount}</Text>
             <Text style={styles.statLabel}>Addresses</Text>
           </TouchableOpacity>
         </View>

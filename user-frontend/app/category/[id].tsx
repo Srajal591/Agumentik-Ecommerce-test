@@ -30,8 +30,7 @@ export default function CategoryProductsScreen() {
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState('All');
-
-  const filterOptions = ['All', 'Jacket', 'Shirt', 'Pant', 'T-Shirt'];
+  const [allCategories, setAllCategories] = useState<any[]>([]);
 
   useEffect(() => {
     fetchData();
@@ -83,11 +82,22 @@ export default function CategoryProductsScreen() {
   const fetchData = async () => {
     try {
       setLoading(true);
-      await Promise.all([fetchCategory(), fetchProducts()]);
+      await Promise.all([fetchCategory(), fetchProducts(), fetchAllCategories()]);
     } catch (error) {
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAllCategories = async () => {
+    try {
+      const response = await categoryService.getCategories();
+      if (response.success) {
+        setAllCategories(response.data);
+      }
+    } catch (error) {
+      console.error('Error fetching categories:', error);
     }
   };
 
@@ -235,20 +245,41 @@ export default function CategoryProductsScreen() {
           horizontal 
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.filterContainer}>
-          {filterOptions.map((filter) => (
+          <TouchableOpacity
+            style={[
+              styles.filterTab,
+              selectedFilter === 'All' && styles.activeFilterTab,
+            ]}
+            onPress={() => {
+              setSelectedFilter('All');
+              router.push(`/category/${id}?name=${encodeURIComponent(category?.name || name)}`);
+            }}>
+            <Text
+              style={[
+                styles.filterText,
+                selectedFilter === 'All' && styles.activeFilterText,
+              ]}>
+              All
+            </Text>
+          </TouchableOpacity>
+          
+          {allCategories.map((cat) => (
             <TouchableOpacity
-              key={filter}
+              key={cat._id}
               style={[
                 styles.filterTab,
-                selectedFilter === filter && styles.activeFilterTab,
+                selectedFilter === cat._id && styles.activeFilterTab,
               ]}
-              onPress={() => setSelectedFilter(filter)}>
+              onPress={() => {
+                setSelectedFilter(cat._id);
+                router.push(`/category/${cat._id}?name=${encodeURIComponent(cat.name)}`);
+              }}>
               <Text
                 style={[
                   styles.filterText,
-                  selectedFilter === filter && styles.activeFilterText,
+                  selectedFilter === cat._id && styles.activeFilterText,
                 ]}>
-                {filter}
+                {cat.name}
               </Text>
             </TouchableOpacity>
           ))}

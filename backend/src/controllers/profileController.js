@@ -64,11 +64,16 @@ exports.getProfile = async (req, res) => {
 exports.updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { name, email } = req.body;
+    const { name, email, mobile } = req.body;
+
+    const updateData = {};
+    if (name) updateData.name = name;
+    if (email) updateData.email = email;
+    if (mobile) updateData.mobile = mobile;
 
     const user = await User.findByIdAndUpdate(
       userId,
-      { name, email },
+      updateData,
       { new: true, runValidators: true }
     ).select('-password');
 
@@ -78,6 +83,39 @@ exports.updateProfile = async (req, res) => {
       data: user,
     });
   } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+// Get user stats (orders, wishlist, addresses count)
+exports.getUserStats = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const Order = require('../models/Order');
+
+    // Get orders count
+    const ordersCount = await Order.countDocuments({ user: userId });
+
+    // Get wishlist count
+    const user = await User.findById(userId).select('wishlist addresses');
+    const wishlistCount = user?.wishlist?.length || 0;
+
+    // Get addresses count from user model
+    const addressesCount = user?.addresses?.length || 0;
+
+    res.status(200).json({
+      success: true,
+      data: {
+        ordersCount,
+        wishlistCount,
+        addressesCount,
+      },
+    });
+  } catch (error) {
+    console.error('Stats error:', error);
     res.status(500).json({
       success: false,
       message: error.message,

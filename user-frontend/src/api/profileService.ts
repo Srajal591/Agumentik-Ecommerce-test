@@ -7,6 +7,12 @@ export const profileService = {
     return response;
   },
 
+  // Get user stats
+  getUserStats: async () => {
+    const response = await api.get('/profile/stats');
+    return response;
+  },
+
   // Update profile
   updateProfile: async (data: { name?: string; email?: string; mobile?: string }) => {
     const response = await api.put('/profile', data);

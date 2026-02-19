@@ -5,6 +5,7 @@ const { authenticate } = require('../middleware/auth');
 const upload = require('../middleware/upload');
 
 router.get('/', authenticate, profileController.getProfile);
+router.get('/stats', authenticate, profileController.getUserStats);
 router.put('/', authenticate, profileController.updateProfile);
 router.post('/upload-image', authenticate, upload.single('image'), profileController.uploadProfileImage);
 
