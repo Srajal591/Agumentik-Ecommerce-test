@@ -77,80 +77,66 @@ export default function ProfileScreen() {
   const handleLogout = () => {
     Alert.alert(
       'Logout',
-      'Are you sure you want to logout?',
+      'Are you sure you want to log out?',
       [
         {
           text: 'Cancel',
           style: 'cancel',
         },
         {
-          text: 'Logout',
+          text: 'Yes, Logout',
           style: 'destructive',
           onPress: async () => {
             try {
-              // Call logout service
               await authService.logout();
-              
-              // Force redirect to welcome page
               router.replace('/(auth)/welcome');
             } catch (error) {
               console.error('Logout error:', error);
-              // Even if there's an error, still redirect to welcome
               router.replace('/(auth)/welcome');
             }
           },
         },
-      ]
+      ],
+      { cancelable: true }
     );
   };
+
   const menuItems = [
     {
       id: '1',
-      title: 'Edit Profile',
+      title: 'Your profile',
       icon: 'person-outline',
-      onPress: () => {},
+      onPress: () => router.push('/edit-profile'),
     },
     {
       id: '2',
-      title: 'My Returns',
-      icon: 'return-down-back-outline',
-      onPress: () => router.push('/returns'),
+      title: 'Payment Methods',
+      icon: 'card-outline',
+      onPress: () => Alert.alert('Coming Soon', 'Payment methods feature coming soon'),
     },
     {
       id: '3',
-      title: 'Manage Addresses',
-      icon: 'location-outline',
-      onPress: () => router.push('/address'),
+      title: 'My Orders',
+      icon: 'receipt-outline',
+      onPress: () => router.push('/(tabs)/orders'),
     },
     {
       id: '4',
-      title: 'Wishlist',
-      icon: 'heart-outline',
-      onPress: () => {},
+      title: 'Settings',
+      icon: 'settings-outline',
+      onPress: () => router.push('/settings'),
     },
     {
       id: '5',
-      title: 'Payment Methods',
-      icon: 'card-outline',
-      onPress: () => {},
+      title: 'Help Center',
+      icon: 'help-circle-outline',
+      onPress: () => Alert.alert('Help Center', 'Contact us at support@fashionstore.com'),
     },
     {
       id: '6',
-      title: 'Notifications',
-      icon: 'notifications-outline',
-      onPress: () => {},
-    },
-    {
-      id: '7',
-      title: 'Help & Support',
-      icon: 'help-circle-outline',
-      onPress: () => {},
-    },
-    {
-      id: '8',
-      title: 'Settings',
-      icon: 'settings-outline',
-      onPress: () => {},
+      title: 'Privacy Policy',
+      icon: 'shield-checkmark-outline',
+      onPress: () => Alert.alert('Privacy Policy', 'Privacy policy coming soon'),
     },
   ];
 
@@ -201,18 +187,18 @@ export default function ProfileScreen() {
 
         {/* Stats */}
         <View style={styles.statsContainer}>
-          <View style={styles.statCard}>
+          <TouchableOpacity style={styles.statCard} onPress={() => router.push('/(tabs)/orders')}>
             <Text style={styles.statValue}>12</Text>
             <Text style={styles.statLabel}>Orders</Text>
-          </View>
-          <View style={styles.statCard}>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.statCard} onPress={() => router.push('/wishlist')}>
             <Text style={styles.statValue}>8</Text>
             <Text style={styles.statLabel}>Wishlist</Text>
-          </View>
-          <View style={styles.statCard}>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.statCard} onPress={() => router.push('/address')}>
             <Text style={styles.statValue}>3</Text>
             <Text style={styles.statLabel}>Addresses</Text>
-          </View>
+          </TouchableOpacity>
         </View>
 
         {/* Menu Items */}

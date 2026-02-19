@@ -9,6 +9,8 @@ import {
   ActivityIndicator,
   RefreshControl,
   Alert,
+  TextInput,
+  ScrollView,
 } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -26,6 +28,10 @@ export default function CategoryProductsScreen() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedFilter, setSelectedFilter] = useState('All');
+
+  const filterOptions = ['All', 'Jacket', 'Shirt', 'Pant', 'T-Shirt'];
 
   useEffect(() => {
     fetchData();
@@ -202,35 +208,59 @@ export default function CategoryProductsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="arrow-back" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>{category?.name || name || 'Products'}</Text>
-        <TouchableOpacity style={styles.headerRight}>
-          <Ionicons name="search" size={24} color={colors.textPrimary} />
+        <Text style={styles.headerTitle}>{category?.name || name || 'My Wishlist'}</Text>
+        <TouchableOpacity style={styles.menuButton}>
+          <Ionicons name="ellipsis-vertical" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>
 
-      {/* Category Banner */}
-      {category?.image && (
-        <View style={styles.categoryBanner}>
-          <Image source={{ uri: category.image }} style={styles.categoryImage} />
-          <View style={styles.categoryOverlay}>
-            <Text style={styles.categoryTitle}>{category.name}</Text>
-            {category.description && (
-              <Text style={styles.categoryDescription} numberOfLines={2}>
-                {category.description}
-              </Text>
-            )}
-          </View>
+      {/* Search Bar */}
+      <View style={styles.searchSection}>
+        <View style={styles.searchContainer}>
+          <Ionicons name="search" size={20} color={colors.textSecondary} style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search products..."
+            placeholderTextColor={colors.textLight}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
         </View>
-      )}
+      </View>
 
-      {/* Products Count */}
-      <View style={styles.countContainer}>
-        <Text style={styles.countText}>
-          {products.length} {products.length === 1 ? 'Product' : 'Products'}
-        </Text>
+      {/* Shop by Category */}
+      <View style={styles.categorySection}>
+        <Text style={styles.sectionTitle}>Shop by Category</Text>
+        <ScrollView 
+          horizontal 
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterContainer}>
+          {filterOptions.map((filter) => (
+            <TouchableOpacity
+              key={filter}
+              style={[
+                styles.filterTab,
+                selectedFilter === filter && styles.activeFilterTab,
+              ]}
+              onPress={() => setSelectedFilter(filter)}>
+              <Text
+                style={[
+                  styles.filterText,
+                  selectedFilter === filter && styles.activeFilterText,
+                ]}>
+                {filter}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
+      {/* Products Count and Filter */}
+      <View style={styles.productsHeader}>
+        <Text style={styles.productsCount}>{products.length} Products</Text>
         <TouchableOpacity style={styles.filterButton}>
           <Ionicons name="options-outline" size={20} color={colors.textPrimary} />
-          <Text style={styles.filterText}>Filter</Text>
+          <Text style={styles.filterButtonText}>Filter</Text>
         </TouchableOpacity>
       </View>
 
@@ -264,16 +294,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     backgroundColor: colors.surface,
-    ...shadows.small,
   },
   backButton: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: colors.background,
+    backgroundColor: '#F5F5F5',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -284,49 +313,78 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'center',
   },
-  headerRight: {
+  menuButton: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.background,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  categoryBanner: {
-    height: 180,
-    position: 'relative',
+  searchSection: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
+    backgroundColor: colors.surface,
   },
-  categoryImage: {
-    width: '100%',
-    height: '100%',
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F5F5F5',
+    borderRadius: borderRadius.lg,
+    paddingHorizontal: spacing.md,
+    height: 50,
   },
-  categoryOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    padding: spacing.lg,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+  searchIcon: {
+    marginRight: spacing.sm,
   },
-  categoryTitle: {
-    fontSize: 24,
+  searchInput: {
+    flex: 1,
+    fontSize: 15,
+    color: colors.textPrimary,
+  },
+  categorySection: {
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+    backgroundColor: colors.surface,
+  },
+  sectionTitle: {
+    fontSize: 16,
     fontWeight: 'bold',
-    color: colors.surface,
-    marginBottom: 4,
+    color: colors.textPrimary,
+    paddingHorizontal: spacing.lg,
+    marginBottom: spacing.md,
   },
-  categoryDescription: {
+  filterContainer: {
+    paddingHorizontal: spacing.lg,
+    gap: spacing.sm,
+  },
+  filterTab: {
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.sm + 2,
+    borderRadius: borderRadius.full,
+    backgroundColor: '#F5F5F5',
+    marginRight: spacing.sm,
+  },
+  activeFilterTab: {
+    backgroundColor: colors.primary,
+  },
+  filterText: {
     fontSize: 14,
-    color: colors.surface,
-    opacity: 0.9,
+    fontWeight: '600',
+    color: colors.textPrimary,
   },
-  countContainer: {
+  activeFilterText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: colors.surface,
+  },
+  productsHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
+    backgroundColor: '#F5F5F5',
   },
-  countText: {
+  productsCount: {
     fontSize: 16,
     fontWeight: '600',
     color: colors.textPrimary,
@@ -336,72 +394,78 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 6,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
     backgroundColor: colors.surface,
     borderRadius: borderRadius.md,
-    ...shadows.small,
+    borderWidth: 1,
+    borderColor: '#E0E0E0',
   },
-  filterText: {
+  filterButtonText: {
     fontSize: 14,
     fontWeight: '600',
     color: colors.textPrimary,
   },
   productsList: {
-    padding: spacing.sm,
-    paddingBottom: 100,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: 120,
   },
   productCard: {
-    flex: 1,
-    margin: spacing.sm,
+    width: '48%',
+    marginHorizontal: '1%',
+    marginBottom: spacing.lg,
     backgroundColor: colors.surface,
-    borderRadius: borderRadius.xl,
+    borderRadius: borderRadius.lg,
     overflow: 'hidden',
-    ...shadows.medium,
   },
   imageContainer: {
     position: 'relative',
     width: '100%',
     height: 220,
+    backgroundColor: '#E8DDD3',
+    borderRadius: borderRadius.lg,
   },
   productImage: {
     width: '100%',
     height: '100%',
-    backgroundColor: colors.backgroundDark,
+    resizeMode: 'cover',
+    borderRadius: borderRadius.lg,
   },
   discountBadge: {
     position: 'absolute',
     top: 10,
     left: 10,
     backgroundColor: colors.error,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: borderRadius.sm,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: borderRadius.md,
   },
   discountText: {
     color: colors.surface,
-    fontSize: 11,
+    fontSize: 12,
     fontWeight: 'bold',
   },
   wishlistBtn: {
     position: 'absolute',
     top: 10,
     right: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: colors.surface,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     justifyContent: 'center',
     alignItems: 'center',
-    ...shadows.small,
   },
   productInfo: {
-    padding: spacing.md,
+    paddingTop: spacing.sm,
+    paddingBottom: spacing.xs,
   },
   productName: {
     fontSize: 15,
     fontWeight: '600',
     color: colors.textPrimary,
-    marginBottom: 4,
+    marginBottom: 6,
+    minHeight: 20,
   },
   productBrand: {
     fontSize: 13,
@@ -411,7 +475,7 @@ const styles = StyleSheet.create({
   ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   ratingContainer: {
     flexDirection: 'row',
@@ -434,9 +498,9 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   price: {
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: 'bold',
-    color: colors.primary,
+    color: colors.textPrimary,
   },
   originalPrice: {
     fontSize: 14,

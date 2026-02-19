@@ -8,8 +8,8 @@ export const profileService = {
   },
 
   // Update profile
-  updateProfile: async (name: string, email: string) => {
-    const response = await api.put('/profile', { name, email });
+  updateProfile: async (data: { name?: string; email?: string; mobile?: string }) => {
+    const response = await api.put('/profile', data);
     return response;
   },
 
