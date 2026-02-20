@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.31.48:5000/api';
+const API_URL = 'https://agumentik-ecommerce-test-1.onrender.com/api';
 
 // Create axios instance with auth token
 const getAuthHeaders = async () => {

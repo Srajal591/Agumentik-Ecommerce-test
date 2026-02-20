@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_URL = 'http://192.168.31.48:5000/api/auth';
+const API_URL = 'https://agumentik-ecommerce-test-1.onrender.com/api/auth';
 
 const TOKEN_KEY = '@auth_token';
 const USER_KEY = '@user_data';

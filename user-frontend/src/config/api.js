@@ -3,12 +3,8 @@
 
 // PRODUCTION: Deployed on Render
 export const API_BASE_URL = 'https://agumentik-ecommerce-test-1.onrender.com/api';
-export const API_URL = API_BASE_URL; // Alias for compatibility
+export const API_URL = API_BASE_URL; 
 
-// For local development, use one of these based on your platform:
-// - Android Emulator: http://10.0.2.2:5000/api
-// - iOS Simulator: http://localhost:5000/api
-// - Physical Device: http://YOUR_COMPUTER_IP:5000/api (e.g., http://192.168.31.48:5000/api)
 
 // API endpoints
 export const API_ENDPOINTS = {
