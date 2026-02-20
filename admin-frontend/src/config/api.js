@@ -1,6 +1,11 @@
 // Centralized API configuration
 // Change this URL to update API endpoint everywhere
-export const API_BASE_URL = 'http://localhost:5000/api';
+
+// PRODUCTION: Deployed on Render
+export const API_BASE_URL = 'https://agumentik-ecommerce-test-1.onrender.com/api';
+
+// For local development, use:
+// export const API_BASE_URL = 'http://localhost:5000/api';
 
 // API endpoints
 export const API_ENDPOINTS = {

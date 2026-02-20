@@ -1,18 +1,14 @@
 // Centralized API configuration
 // Change this URL to update API endpoint everywhere
 
-// IMPORTANT: Update this based on your platform:
-// - Android Emulator: http://10.0.2.2:5000/api (sometimes doesn't work)
-// - iOS Simulator: http://localhost:5000/api
-// - Physical Device: http://YOUR_COMPUTER_IP:5000/api
-
-// Using your computer's actual IP address (works for both emulator and physical device)
-export const API_BASE_URL = 'http://192.168.31.48:5000/api';
+// PRODUCTION: Deployed on Render
+export const API_BASE_URL = 'https://agumentik-ecommerce-test-1.onrender.com/api';
 export const API_URL = API_BASE_URL; // Alias for compatibility
 
-// For Android emulator, use: http://10.0.2.2:5000/api
-// For iOS simulator, use: http://localhost:5000/api
-// For physical device, use your computer's IP: http://192.168.x.x:5000/api
+// For local development, use one of these based on your platform:
+// - Android Emulator: http://10.0.2.2:5000/api
+// - iOS Simulator: http://localhost:5000/api
+// - Physical Device: http://YOUR_COMPUTER_IP:5000/api (e.g., http://192.168.31.48:5000/api)
 
 // API endpoints
 export const API_ENDPOINTS = {
