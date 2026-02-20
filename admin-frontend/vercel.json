@@ -9,26 +9,14 @@
       }
     }
   ],
-  "routes": [
-    {
-      "src": "/assets/(.*)",
-      "dest": "/assets/$1"
-    },
-    {
-      "src": "/(.*\\.(png|jpg|jpeg|gif|svg|ico|webp|json|txt))",
-      "dest": "/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/index.html"
-    }
-  ],
+
   "rewrites": [
     {
       "source": "/(.*)",
       "destination": "/index.html"
     }
   ],
+
   "headers": [
     {
       "source": "/(.*)",
