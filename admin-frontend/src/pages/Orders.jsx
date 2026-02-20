@@ -87,8 +87,9 @@ const Orders = () => {
                 <th style={styles.th}>Customer</th>
                 <th style={styles.th}>Items</th>
                 <th style={styles.th}>Total</th>
-                <th style={styles.th}>Status</th>
-                <th style={styles.th}>Payment</th>
+                <th style={styles.th}>Payment Method</th>
+                <th style={styles.th}>Payment Status</th>
+                <th style={styles.th}>Order Status</th>
                 <th style={styles.th}>Date</th>
                 <th style={styles.th}>Actions</th>
               </tr>
@@ -106,10 +107,22 @@ const Orders = () => {
                       <span style={styles.price}>₹{order.total}</span>
                     </td>
                     <td style={styles.td}>
-                      <span style={getStatusStyle(order.orderStatus)}>{order.orderStatus}</span>
+                      <span style={{
+                        padding: '4px 10px',
+                        borderRadius: '12px',
+                        fontSize: '11px',
+                        fontWeight: '600',
+                        backgroundColor: order.paymentMethod === 'razorpay' ? colors.primaryLight : colors.backgroundDark,
+                        color: order.paymentMethod === 'razorpay' ? colors.primary : colors.textSecondary,
+                      }}>
+                        {order.paymentMethod === 'razorpay' ? '💳 Online' : '💵 COD'}
+                      </span>
                     </td>
                     <td style={styles.td}>
                       <span style={getStatusStyle(order.paymentStatus)}>{order.paymentStatus}</span>
+                    </td>
+                    <td style={styles.td}>
+                      <span style={getStatusStyle(order.orderStatus)}>{order.orderStatus}</span>
                     </td>
                     <td style={styles.td}>{new Date(order.createdAt).toLocaleDateString()}</td>
                     <td style={styles.td}>
@@ -122,7 +135,7 @@ const Orders = () => {
                 ))
               ) : (
                 <tr>
-                  <td colSpan="8" style={{ ...styles.td, textAlign: 'center', padding: '40px' }}>
+                  <td colSpan="9" style={{ ...styles.td, textAlign: 'center', padding: '40px' }}>
                     <div style={styles.emptyState}>
                       <MdShoppingCart style={styles.emptyIcon} />
                       <p style={styles.emptyText}>No orders found</p>
@@ -184,6 +197,61 @@ const Orders = () => {
               <p style={styles.infoText}><strong>Name:</strong> {selectedOrder.shippingAddress.fullName}</p>
               <p style={styles.infoText}><strong>Mobile:</strong> {selectedOrder.shippingAddress.mobile}</p>
               <p style={styles.infoText}><strong>Address:</strong> {selectedOrder.shippingAddress.addressLine1}, {selectedOrder.shippingAddress.city}</p>
+            </div>
+
+            <div style={styles.modalSection}>
+              <h3 style={styles.sectionTitle}>Payment Information</h3>
+              <p style={styles.infoText}>
+                <strong>Payment Method:</strong> 
+                <span style={{
+                  marginLeft: '8px',
+                  padding: '4px 12px',
+                  borderRadius: '12px',
+                  backgroundColor: selectedOrder.paymentMethod === 'razorpay' ? colors.primaryLight : colors.backgroundDark,
+                  color: selectedOrder.paymentMethod === 'razorpay' ? colors.primary : colors.textSecondary,
+                  fontSize: '12px',
+                  fontWeight: '600',
+                  textTransform: 'uppercase',
+                }}>
+                  {selectedOrder.paymentMethod === 'razorpay' ? '💳 Online Payment' : '💵 Cash on Delivery'}
+                </span>
+              </p>
+              <p style={styles.infoText}>
+                <strong>Payment Status:</strong> 
+                <span style={{
+                  marginLeft: '8px',
+                  ...getStatusStyle(selectedOrder.paymentStatus)
+                }}>
+                  {selectedOrder.paymentStatus}
+                </span>
+              </p>
+              {selectedOrder.paymentId && (
+                <p style={styles.infoText}>
+                  <strong>Payment ID:</strong> 
+                  <span style={{
+                    marginLeft: '8px',
+                    fontFamily: 'monospace',
+                    fontSize: '12px',
+                    color: colors.textSecondary,
+                    backgroundColor: colors.background,
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                  }}>
+                    {selectedOrder.paymentId}
+                  </span>
+                </p>
+              )}
+              <p style={styles.infoText}>
+                <strong>Order Total:</strong> 
+                <span style={{
+                  marginLeft: '8px',
+                  fontSize: '18px',
+                  fontWeight: 'bold',
+                  color: colors.primary,
+                }}>
+                  ₹{selectedOrder.total}
+                </span>
+              </p>
             </div>
 
             <div style={styles.modalSection}>

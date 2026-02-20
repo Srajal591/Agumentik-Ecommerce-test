@@ -11,8 +11,10 @@ import {
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import RazorpayCheckout from 'react-native-razorpay';
 import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
 import { orderService } from '../../src/api/orderService';
+import { paymentService } from '../../src/api/paymentService';
 
 interface PaymentMethod {
   id: string;
@@ -30,46 +32,18 @@ export default function PaymentMethodScreen() {
 
   const paymentMethods: PaymentMethod[] = [
     {
+      id: 'razorpay',
+      name: 'Online Payment (Razorpay)',
+      icon: 'card-outline',
+      enabled: true,
+      description: 'Pay securely with UPI, Cards, Wallets',
+    },
+    {
       id: 'cod',
       name: 'Cash on Delivery',
       icon: 'cash-outline',
       enabled: true,
       description: 'Pay when you receive',
-    },
-    {
-      id: 'googlepay',
-      name: 'Google Pay',
-      icon: 'logo-google',
-      enabled: false,
-      description: 'Coming Soon',
-    },
-    {
-      id: 'phonepe',
-      name: 'PhonePe',
-      icon: 'phone-portrait-outline',
-      enabled: false,
-      description: 'Coming Soon',
-    },
-    {
-      id: 'paytm',
-      name: 'Paytm',
-      icon: 'wallet-outline',
-      enabled: false,
-      description: 'Coming Soon',
-    },
-    {
-      id: 'card',
-      name: 'Credit/Debit Card',
-      icon: 'card-outline',
-      enabled: false,
-      description: 'Coming Soon',
-    },
-    {
-      id: 'upi',
-      name: 'UPI',
-      icon: 'qr-code-outline',
-      enabled: false,
-      description: 'Coming Soon',
     },
   ];
 
@@ -124,21 +98,182 @@ export default function PaymentMethodScreen() {
         paymentMethod: selectedMethod,
       };
 
-      // Create order
-      const response = await orderService.createOrder(orderData);
+      // Create order first
+      const orderResponse = await orderService.createOrder(orderData);
+      const createdOrder = orderResponse.data;
 
-      // Navigate to confirmation
-      router.replace({
-        pathname: '/checkout/confirmation',
-        params: {
-          orderId: response.data._id,
-          orderNumber: response.data.orderNumber,
-        },
-      });
+      // If Razorpay payment, initiate payment
+      if (selectedMethod === 'razorpay') {
+        await handleRazorpayPayment(createdOrder, total, addressData);
+      } else {
+        // For COD, directly navigate to confirmation
+        router.replace({
+          pathname: '/checkout/confirmation',
+          params: {
+            orderId: createdOrder._id,
+            orderNumber: createdOrder.orderNumber,
+          },
+        });
+      }
     } catch (error: any) {
-      Alert.alert('Error', error.message);
+      Alert.alert('Error', error.message || 'Failed to place order');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleRazorpayPayment = async (order: any, amount: number, addressData: any) => {
+    try {
+      console.log('Creating Razorpay order...', { amount, orderId: order._id });
+      
+      // Create Razorpay order
+      const razorpayOrderResponse = await paymentService.createRazorpayOrder(
+        amount,
+        order._id
+      );
+
+      console.log('Razorpay order response:', razorpayOrderResponse);
+
+      // Axios interceptor already unwraps response.data, so razorpayOrderResponse is the actual data
+      // Check if response is valid
+      if (!razorpayOrderResponse) {
+        throw new Error('No response from payment service');
+      }
+
+      // Check if it's the unwrapped data object or wrapped response
+      const paymentData = razorpayOrderResponse.data || razorpayOrderResponse;
+
+      if (!paymentData.orderId || !paymentData.key) {
+        throw new Error('Invalid response structure from payment service');
+      }
+
+      // Check if we're in mock mode (dummy keys or missing key)
+      const isMockMode = !paymentData.key || paymentData.key === 'rzp_test_dummy_key';
+
+      // Check if RazorpayCheckout is available (React Native module loaded)
+      const isRazorpayAvailable = RazorpayCheckout && typeof RazorpayCheckout.open === 'function';
+
+      console.log('Payment mode:', isMockMode ? 'MOCK' : 'REAL');
+      console.log('Razorpay module available:', isRazorpayAvailable);
+
+      // Use mock mode if: dummy keys OR Razorpay module not available
+      if (isMockMode || !isRazorpayAvailable) {
+        const reason = isMockMode 
+          ? 'Mock payment mode active (dummy keys detected)' 
+          : 'Razorpay module not available - using mock mode';
+        
+        console.log('Using mock mode:', reason);
+        
+        // Mock mode - simulate successful payment without opening Razorpay
+        Alert.alert(
+          '🧪 Test Mode',
+          `${reason}\n\nSimulating successful payment...`,
+          [
+            {
+              text: 'OK',
+              onPress: async () => {
+                try {
+                  console.log('Verifying mock payment...');
+                  
+                  // Simulate payment verification with mock data
+                  await paymentService.verifyPayment({
+                    razorpay_order_id: paymentData.orderId,
+                    razorpay_payment_id: `pay_mock_${Date.now()}`,
+                    razorpay_signature: 'mock_signature',
+                    orderId: order._id,
+                  });
+
+                  console.log('Mock payment verified successfully');
+
+                  // Navigate to confirmation
+                  router.replace({
+                    pathname: '/checkout/confirmation',
+                    params: {
+                      orderId: order._id,
+                      orderNumber: order.orderNumber,
+                      paymentSuccess: 'true',
+                    },
+                  });
+                } catch (error: any) {
+                  console.error('Mock payment verification failed:', error);
+                  Alert.alert('Payment Verification Failed', error.message);
+                }
+              },
+            },
+          ]
+        );
+        return;
+      }
+
+      // Real Razorpay mode - open checkout
+      console.log('Opening Razorpay checkout...');
+      
+      const options = {
+        description: `Order #${order.orderNumber}`,
+        image: 'https://your-logo-url.com/logo.png',
+        currency: paymentData.currency,
+        key: paymentData.key,
+        amount: paymentData.amount,
+        name: 'Fashion Store',
+        order_id: paymentData.orderId,
+        prefill: {
+          email: '',
+          contact: addressData.mobile,
+          name: addressData.fullName,
+        },
+        theme: { color: colors.primary },
+      };
+
+      RazorpayCheckout.open(options)
+        .then(async (data: any) => {
+          // Payment successful
+          try {
+            console.log('Payment successful, verifying...');
+            
+            // Verify payment on backend
+            await paymentService.verifyPayment({
+              razorpay_order_id: data.razorpay_order_id,
+              razorpay_payment_id: data.razorpay_payment_id,
+              razorpay_signature: data.razorpay_signature,
+              orderId: order._id,
+            });
+
+            console.log('Payment verified successfully');
+
+            // Navigate to confirmation
+            router.replace({
+              pathname: '/checkout/confirmation',
+              params: {
+                orderId: order._id,
+                orderNumber: order.orderNumber,
+                paymentSuccess: 'true',
+              },
+            });
+          } catch (error: any) {
+            console.error('Payment verification failed:', error);
+            Alert.alert('Payment Verification Failed', error.message);
+          }
+        })
+        .catch((error: any) => {
+          // Payment failed or cancelled
+          console.error('Payment failed or cancelled:', error);
+          Alert.alert(
+            'Payment Failed',
+            'Your payment was not completed. Please try again.',
+            [
+              {
+                text: 'OK',
+                onPress: () => {
+                  // Navigate back or stay on payment page
+                },
+              },
+            ]
+          );
+        });
+    } catch (error: any) {
+      console.error('Payment initiation error:', error);
+      Alert.alert('Error', error.message || 'Failed to initiate payment. Please try again.');
+      throw error;
     }
   };
 
@@ -196,7 +331,25 @@ export default function PaymentMethodScreen() {
           {paymentMethods.map(renderPaymentMethod)}
         </View>
 
-        {/* COD Info */}
+        {/* Payment Info */}
+        {selectedMethod === 'razorpay' && (
+          <View style={styles.infoCard}>
+            <Ionicons name="shield-checkmark" size={24} color={colors.success} />
+            <View style={styles.infoContent}>
+              <Text style={styles.infoTitle}>Secure Online Payment</Text>
+              <Text style={styles.infoText}>
+                Pay securely using UPI, Credit/Debit Cards, Net Banking, or Wallets. Powered by Razorpay.
+              </Text>
+              <Text style={[styles.infoText, { marginTop: 8, fontWeight: '600', color: colors.warning }]}>
+                🧪 Mock Mode Active
+              </Text>
+              <Text style={[styles.infoText, { fontSize: 12, color: colors.textSecondary }]}>
+                Payment will be simulated without real transaction. Perfect for testing!
+              </Text>
+            </View>
+          </View>
+        )}
+
         {selectedMethod === 'cod' && (
           <View style={styles.infoCard}>
             <Ionicons name="information-circle" size={24} color={colors.info} />

@@ -14,6 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { colors, spacing, borderRadius, shadows } from '../../src/theme/colors';
 import { orderService } from '../../src/api/orderService';
+import { formatPrice } from '../../src/utils/formatPrice';
 
 interface OrderItem {
   product: string;
@@ -298,7 +299,7 @@ export default function OrderDetailsScreen() {
                 {item.color && <Text style={styles.itemMeta}>Color: {item.color}</Text>}
                 <Text style={styles.itemMeta}>Qty: {item.quantity}</Text>
               </View>
-              <Text style={styles.itemPrice}>₹{item.price * item.quantity}</Text>
+              <Text style={styles.itemPrice}>{formatPrice(item.price * item.quantity)}</Text>
             </View>
           ))}
         </View>
