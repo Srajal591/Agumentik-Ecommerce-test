@@ -1,6 +1,6 @@
 import { authService } from '../api/authService';
 import { colors, spacing } from '../theme/colors';
-import { MdStorefront, MdNotifications, MdAccountCircle, MdMenu } from 'react-icons/md';
+import { MdNotifications, MdAccountCircle, MdMenu } from 'react-icons/md';
 
 const Navbar = ({ onMenuClick }) => {
   const user = authService.getStoredUser();
@@ -15,8 +15,11 @@ const Navbar = ({ onMenuClick }) => {
 
         {/* Logo */}
         <div style={styles.brand}>
-          <MdStorefront style={styles.brandIcon} />
-          <span style={styles.brandText}>Fashion Store</span>
+          <img 
+            src="/agumentik-ecommerce-logo.png" 
+            alt="Fashion Store Logo" 
+            style={styles.logo}
+          />
         </div>
 
         {/* Right side */}
@@ -76,6 +79,12 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     gap: spacing.sm,
+  },
+  logo: {
+    height: '45px',
+    width: 'auto',
+    objectFit: 'contain',
+    cursor: 'pointer',
   },
   brandIcon: {
     fontSize: '28px',
