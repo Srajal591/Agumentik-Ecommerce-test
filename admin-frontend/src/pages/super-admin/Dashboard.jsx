@@ -1,6 +1,14 @@
 import { useState, useEffect } from 'react';
-import { colors, spacing } from '../../theme/colors';
-import { MdPeople, MdCategory, MdShoppingBag, MdShoppingCart, MdAdminPanelSettings } from 'react-icons/md';
+import { motion } from 'framer-motion';
+import { colors, spacing, shadows } from '../../theme/colors';
+import { 
+  MdPeople, 
+  MdCategory, 
+  MdShoppingBag, 
+  MdShoppingCart, 
+  MdAdminPanelSettings,
+  MdAssignment
+} from 'react-icons/md';
 import axios from '../../api/axios';
 
 const SuperAdminDashboard = () => {
@@ -20,7 +28,6 @@ const SuperAdminDashboard = () => {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      // Fetch stats from various endpoints
       const [usersRes, adminsRes, categoriesRes, productsRes, ordersRes] = await Promise.all([
         axios.get('/users?role=users&limit=1'),
         axios.get('/users?role=admins&limit=1'),
@@ -56,24 +63,63 @@ const SuperAdminDashboard = () => {
   }
 
   return (
-    <div style={styles.container}>
-      <h1 style={styles.title}>Super Admin Dashboard</h1>
-      <p style={styles.subtitle}>Welcome to the Super Admin Panel</p>
+    <motion.div 
+      style={styles.container}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div>
+        <h1 style={styles.title}>Super Admin Dashboard</h1>
+        <p style={styles.subtitle}>Welcome to the Super Admin Panel</p>
+      </div>
 
       <div style={styles.grid}>
         {statCards.map((card, index) => (
-          <div key={index} style={styles.card}>
-            <div style={{ ...styles.iconContainer, backgroundColor: card.color + '20' }}>
+          <motion.div
+            key={index}
+            style={styles.card}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 }}
+            whileHover={{ y: -5, boxShadow: shadows.md }}
+          >
+            <div style={{ ...styles.iconContainer, backgroundColor: card.color + '15' }}>
               <card.icon style={{ ...styles.icon, color: card.color }} />
             </div>
             <div style={styles.cardContent}>
               <h3 style={styles.cardValue}>{card.value}</h3>
               <p style={styles.cardTitle}>{card.title}</p>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
-    </div>
+
+      <div style={styles.quickActions}>
+        <h2 style={styles.sectionTitle}>Quick Actions</h2>
+        <div style={styles.actionsGrid}>
+          {[
+            { icon: MdPeople, label: 'Manage Users', path: '/users' },
+            { icon: MdAdminPanelSettings, label: 'Admin Management', path: '/admin-management' },
+            { icon: MdCategory, label: 'Categories', path: '/categories' },
+            { icon: MdShoppingBag, label: 'Products', path: '/products' },
+            { icon: MdAssignment, label: 'Orders', path: '/orders' },
+            { icon: MdShoppingCart, label: 'Returns', path: '/returns' },
+          ].map((action, index) => (
+            <motion.button
+              key={index}
+              style={styles.actionButton}
+              whileHover={{ scale: 1.02, boxShadow: shadows.sm }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => window.location.href = action.path}
+            >
+              <action.icon size={22} color={colors.primary} />
+              <span>{action.label}</span>
+            </motion.button>
+          ))}
+        </div>
+      </div>
+    </motion.div>
   );
 };
 
@@ -105,15 +151,18 @@ const styles = {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
     gap: spacing.lg,
+    marginBottom: spacing.xxl,
   },
   card: {
     backgroundColor: colors.surface,
     borderRadius: '12px',
     padding: spacing.lg,
-    boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+    boxShadow: shadows.sm,
     display: 'flex',
     alignItems: 'center',
     gap: spacing.md,
+    cursor: 'pointer',
+    transition: 'all 0.3s ease',
   },
   iconContainer: {
     width: '60px',
@@ -140,6 +189,35 @@ const styles = {
     color: colors.textSecondary,
     margin: 0,
     marginTop: spacing.xs,
+  },
+  quickActions: {
+    marginTop: spacing.xl,
+  },
+  sectionTitle: {
+    fontSize: '22px',
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: spacing.lg,
+  },
+  actionsGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+    gap: spacing.md,
+  },
+  actionButton: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: spacing.lg,
+    backgroundColor: colors.surface,
+    border: `1px solid ${colors.border}`,
+    borderRadius: '12px',
+    cursor: 'pointer',
+    fontSize: '14px',
+    fontWeight: '600',
+    color: colors.textPrimary,
+    transition: 'all 0.2s ease',
   },
 };
 

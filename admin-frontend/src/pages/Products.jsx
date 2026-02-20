@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { productService } from '../api/productService';
 import { categoryService } from '../api/categoryService';
-import { colors, spacing } from '../theme/colors';
+import { colors, spacing, shadows } from '../theme/colors';
+import { MdAdd, MdDelete, MdSearch, MdFilterList } from 'react-icons/md';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -70,41 +72,73 @@ const Products = () => {
   }
 
   return (
-    <div style={styles.container}>
+    <motion.div 
+      style={styles.container}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <div style={styles.header}>
-        <h1 style={styles.title}>Products Management</h1>
-        <button onClick={() => window.location.href = '/add-product'} style={styles.addButton}>
-          + Add Product
-        </button>
+        <div>
+          <h1 style={styles.title}>Products Management</h1>
+          <p style={styles.subtitle}>Manage your product catalog</p>
+        </div>
+        <motion.button 
+          onClick={() => window.location.href = '/add-product'} 
+          style={styles.addButton}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+        >
+          <MdAdd size={20} />
+          Add Product
+        </motion.button>
       </div>
 
       {/* Filters */}
-      <div style={styles.filters}>
-        <input
-          type="text"
-          placeholder="Search products..."
-          value={filters.search}
-          onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-          style={styles.searchInput}
-        />
-        <select
-          value={filters.category}
-          onChange={(e) => setFilters({ ...filters, category: e.target.value })}
-          style={styles.select}
-        >
-          <option value="">All Categories</option>
-          {categories.map((cat) => (
-            <option key={cat._id} value={cat._id}>
-              {cat.name}
-            </option>
-          ))}
-        </select>
-      </div>
+      <motion.div 
+        style={styles.filters}
+        initial={{ y: -10, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.1 }}
+      >
+        <div style={styles.searchContainer}>
+          <MdSearch size={20} color={colors.textSecondary} />
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={filters.search}
+            onChange={(e) => setFilters({ ...filters, search: e.target.value })}
+            style={styles.searchInput}
+          />
+        </div>
+        <div style={styles.selectContainer}>
+          <MdFilterList size={20} color={colors.textSecondary} />
+          <select
+            value={filters.category}
+            onChange={(e) => setFilters({ ...filters, category: e.target.value })}
+            style={styles.select}
+          >
+            <option value="">All Categories</option>
+            {categories.map((cat) => (
+              <option key={cat._id} value={cat._id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </motion.div>
 
       {/* Products Grid */}
       <div style={styles.grid}>
-        {products.map((product) => (
-          <div key={product._id} style={styles.card}>
+        {products.map((product, index) => (
+          <motion.div
+            key={product._id}
+            style={styles.card}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: index * 0.05 }}
+            whileHover={{ y: -5, boxShadow: shadows.md }}
+          >
             <div style={styles.imageContainer}>
               {product.images?.[0] ? (
                 <img src={product.images[0]} alt={product.name} style={styles.image} />
@@ -131,36 +165,54 @@ const Products = () => {
                 {product.status}
               </span>
               <div style={styles.cardActions}>
-                <button onClick={() => handleDelete(product._id)} style={styles.deleteButton}>
+                <motion.button 
+                  onClick={() => handleDelete(product._id)} 
+                  style={styles.deleteButton}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <MdDelete size={16} />
                   Delete
-                </button>
+                </motion.button>
               </div>
             </div>
-          </div>
+          </motion.div>
         ))}
       </div>
 
       {/* Pagination */}
       <div style={styles.pagination}>
-        <button
+        <motion.button
           onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
           disabled={pagination.page === 1}
-          style={styles.paginationButton}
+          style={{
+            ...styles.paginationButton,
+            opacity: pagination.page === 1 ? 0.5 : 1,
+            cursor: pagination.page === 1 ? 'not-allowed' : 'pointer',
+          }}
+          whileHover={pagination.page !== 1 ? { scale: 1.02 } : {}}
+          whileTap={pagination.page !== 1 ? { scale: 0.98 } : {}}
         >
           Previous
-        </button>
+        </motion.button>
         <span style={styles.paginationInfo}>
           Page {pagination.page} of {Math.ceil(pagination.total / pagination.limit)}
         </span>
-        <button
+        <motion.button
           onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
           disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
-          style={styles.paginationButton}
+          style={{
+            ...styles.paginationButton,
+            opacity: pagination.page >= Math.ceil(pagination.total / pagination.limit) ? 0.5 : 1,
+            cursor: pagination.page >= Math.ceil(pagination.total / pagination.limit) ? 'not-allowed' : 'pointer',
+          }}
+          whileHover={pagination.page < Math.ceil(pagination.total / pagination.limit) ? { scale: 1.02 } : {}}
+          whileTap={pagination.page < Math.ceil(pagination.total / pagination.limit) ? { scale: 0.98 } : {}}
         >
           Next
-        </button>
+        </motion.button>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -174,8 +226,13 @@ const styles = {
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: spacing.lg,
+    flexWrap: 'wrap',
+    gap: spacing.md,
   },
   addButton: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: spacing.xs,
     padding: '12px 24px',
     backgroundColor: colors.primary,
     color: colors.surface,
@@ -184,6 +241,7 @@ const styles = {
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
+    transition: 'all 0.2s',
   },
   loading: {
     display: 'flex',
@@ -197,50 +255,79 @@ const styles = {
     fontSize: '28px',
     fontWeight: 'bold',
     color: colors.textPrimary,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.xs,
+  },
+  subtitle: {
+    fontSize: '14px',
+    color: colors.textSecondary,
+    margin: 0,
   },
   filters: {
     display: 'flex',
-    gap: spacing.sm,
-    marginBottom: spacing.md,
+    gap: spacing.md,
+    marginBottom: spacing.lg,
     flexWrap: 'wrap',
+  },
+  searchContainer: {
+    flex: 1,
+    minWidth: '250px',
+    display: 'flex',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: '10px 14px',
+    backgroundColor: colors.surface,
+    border: `1px solid ${colors.border}`,
+    borderRadius: '8px',
   },
   searchInput: {
     flex: 1,
-    minWidth: '200px',
-    padding: '10px',
+    border: 'none',
+    outline: 'none',
+    fontSize: '14px',
+    backgroundColor: 'transparent',
+  },
+  selectContainer: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: spacing.sm,
+    padding: '10px 14px',
+    backgroundColor: colors.surface,
     border: `1px solid ${colors.border}`,
     borderRadius: '8px',
-    fontSize: '14px',
+    minWidth: '200px',
   },
   select: {
-    padding: '10px',
-    border: `1px solid ${colors.border}`,
-    borderRadius: '8px',
+    flex: 1,
+    border: 'none',
+    outline: 'none',
     fontSize: '14px',
-    minWidth: '200px',
+    backgroundColor: 'transparent',
+    cursor: 'pointer',
   },
   grid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-    gap: spacing.md,
-    marginBottom: spacing.md,
+    gap: spacing.lg,
+    marginBottom: spacing.lg,
   },
   card: {
     backgroundColor: colors.surface,
     borderRadius: '12px',
     overflow: 'hidden',
-    boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+    boxShadow: shadows.sm,
+    transition: 'all 0.3s ease',
   },
   imageContainer: {
     width: '100%',
-    height: '200px',
+    height: '220px',
     backgroundColor: colors.background,
+    overflow: 'hidden',
   },
   image: {
     width: '100%',
     height: '100%',
     objectFit: 'cover',
+    transition: 'transform 0.3s ease',
   },
   imagePlaceholder: {
     width: '100%',
@@ -252,7 +339,7 @@ const styles = {
     fontSize: '14px',
   },
   cardContent: {
-    padding: spacing.sm,
+    padding: spacing.md,
   },
   productName: {
     fontSize: '16px',
@@ -264,15 +351,15 @@ const styles = {
     whiteSpace: 'nowrap',
   },
   productBrand: {
-    fontSize: '14px',
+    fontSize: '13px',
     color: colors.textSecondary,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
   priceRow: {
     display: 'flex',
     alignItems: 'center',
     gap: spacing.xs,
-    marginBottom: spacing.xs,
+    marginBottom: spacing.sm,
   },
   price: {
     fontSize: '18px',
@@ -287,7 +374,7 @@ const styles = {
   badge: {
     display: 'inline-block',
     padding: '4px 12px',
-    borderRadius: '12px',
+    borderRadius: '20px',
     fontSize: '12px',
     fontWeight: '600',
     marginBottom: spacing.sm,
@@ -299,6 +386,10 @@ const styles = {
   },
   deleteButton: {
     flex: 1,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.xs,
     padding: '8px',
     backgroundColor: colors.error,
     color: colors.surface,
@@ -307,15 +398,17 @@ const styles = {
     fontSize: '13px',
     fontWeight: '600',
     cursor: 'pointer',
+    transition: 'all 0.2s',
   },
   pagination: {
     display: 'flex',
     justifyContent: 'center',
     alignItems: 'center',
     gap: spacing.md,
-    padding: spacing.md,
+    padding: spacing.lg,
     backgroundColor: colors.surface,
     borderRadius: '12px',
+    boxShadow: shadows.sm,
     flexWrap: 'wrap',
   },
   paginationButton: {
@@ -327,10 +420,12 @@ const styles = {
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
+    transition: 'all 0.2s',
   },
   paginationInfo: {
     fontSize: '14px',
     color: colors.textSecondary,
+    fontWeight: '500',
   },
 };
 

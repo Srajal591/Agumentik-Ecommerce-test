@@ -1,7 +1,13 @@
 import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import { userService } from '../api/userService';
-import { colors, spacing } from '../theme/colors';
-import { MdPeople, MdAdminPanelSettings } from 'react-icons/md';
+import { colors, spacing, shadows } from '../theme/colors';
+import { 
+  MdPeople, 
+  MdAdminPanelSettings, 
+  MdBlock, 
+  MdCheckCircle
+} from 'react-icons/md';
 
 const Users = () => {
   const [users, setUsers] = useState([]);
@@ -55,40 +61,56 @@ const Users = () => {
   };
 
   if (loading) {
-    return <div style={styles.loading}>Loading...</div>;
+    return <div style={styles.loading}>Loading users...</div>;
   }
 
   return (
-    <div style={styles.container}>
+    <motion.div 
+      style={styles.container}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <div style={styles.header}>
-        <h1 style={styles.title}>Users Management</h1>
+        <div>
+          <h1 style={styles.title}>Users Management</h1>
+          <p style={styles.subtitle}>Manage all users and administrators</p>
+        </div>
         
-        {/* Role Filter Buttons */}
         <div style={styles.filterButtons}>
-          <button
+          <motion.button
             onClick={() => handleRoleFilterChange('users')}
             style={{
               ...styles.filterButton,
               ...(roleFilter === 'users' ? styles.filterButtonActive : {}),
             }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             <MdPeople size={20} />
             Users
-          </button>
-          <button
+          </motion.button>
+          <motion.button
             onClick={() => handleRoleFilterChange('admins')}
             style={{
               ...styles.filterButton,
               ...(roleFilter === 'admins' ? styles.filterButtonActive : {}),
             }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             <MdAdminPanelSettings size={20} />
             Admins
-          </button>
+          </motion.button>
         </div>
       </div>
 
-      <div style={styles.card}>
+      <motion.div 
+        style={styles.card}
+        initial={{ y: 20, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ delay: 0.1 }}
+      >
         <div style={styles.tableWrapper}>
           <table style={styles.table}>
             <thead>
@@ -104,8 +126,21 @@ const Users = () => {
             </thead>
             <tbody>
               {users.map((user) => (
-                <tr key={user._id} style={styles.tableRow}>
-                  <td style={styles.td}>{user.name || 'N/A'}</td>
+                <motion.tr 
+                  key={user._id} 
+                  style={styles.tableRow}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  whileHover={{ backgroundColor: colors.background }}
+                >
+                  <td style={styles.td}>
+                    <div style={styles.nameCell}>
+                      <div style={styles.avatar}>
+                        {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                      </div>
+                      <span style={styles.nameText}>{user.name || 'N/A'}</span>
+                    </div>
+                  </td>
                   <td style={styles.td}>{user.mobile}</td>
                   <td style={styles.td}>{user.email || 'N/A'}</td>
                   <td style={styles.td}>
@@ -133,27 +168,29 @@ const Users = () => {
                         color: user.isBlocked ? colors.error : colors.success,
                       }}
                     >
-                      {user.isBlocked ? 'Blocked' : 'Active'}
+                      {user.isBlocked ? <><MdBlock size={14} /> Blocked</> : <><MdCheckCircle size={14} /> Active</>}
                     </span>
                   </td>
                   <td style={styles.td}>{new Date(user.createdAt).toLocaleDateString()}</td>
                   <td style={styles.td}>
                     {user.role !== 'super_admin' && (
-                      <button
+                      <motion.button
                         onClick={() => handleToggleBlock(user._id)}
                         style={{
                           ...styles.button,
                           backgroundColor: user.isBlocked ? colors.success : colors.error,
                         }}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
                       >
                         {user.isBlocked ? 'Unblock' : 'Block'}
-                      </button>
+                      </motion.button>
                     )}
                     {user.role === 'super_admin' && (
                       <span style={styles.protectedText}>Protected</span>
                     )}
                   </td>
-                </tr>
+                </motion.tr>
               ))}
             </tbody>
           </table>
@@ -165,10 +202,9 @@ const Users = () => {
           </div>
         )}
 
-        {/* Pagination */}
         {users.length > 0 && (
           <div style={styles.pagination}>
-            <button
+            <motion.button
               onClick={() => setPagination((prev) => ({ ...prev, page: prev.page - 1 }))}
               disabled={pagination.page === 1}
               style={{
@@ -176,13 +212,15 @@ const Users = () => {
                 opacity: pagination.page === 1 ? 0.5 : 1,
                 cursor: pagination.page === 1 ? 'not-allowed' : 'pointer',
               }}
+              whileHover={pagination.page !== 1 ? { scale: 1.02 } : {}}
+              whileTap={pagination.page !== 1 ? { scale: 0.98 } : {}}
             >
               Previous
-            </button>
+            </motion.button>
             <span style={styles.paginationInfo}>
               Page {pagination.page} of {Math.ceil(pagination.total / pagination.limit) || 1}
             </span>
-            <button
+            <motion.button
               onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
               disabled={pagination.page >= Math.ceil(pagination.total / pagination.limit)}
               style={{
@@ -190,13 +228,15 @@ const Users = () => {
                 opacity: pagination.page >= Math.ceil(pagination.total / pagination.limit) ? 0.5 : 1,
                 cursor: pagination.page >= Math.ceil(pagination.total / pagination.limit) ? 'not-allowed' : 'pointer',
               }}
+              whileHover={pagination.page < Math.ceil(pagination.total / pagination.limit) ? { scale: 1.02 } : {}}
+              whileTap={pagination.page < Math.ceil(pagination.total / pagination.limit) ? { scale: 0.98 } : {}}
             >
               Next
-            </button>
+            </motion.button>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };
 
@@ -225,6 +265,12 @@ const styles = {
     fontSize: '28px',
     fontWeight: 'bold',
     color: colors.textPrimary,
+    marginBottom: spacing.xs,
+  },
+  subtitle: {
+    fontSize: '14px',
+    color: colors.textSecondary,
+    margin: 0,
   },
   filterButtons: {
     display: 'flex',
@@ -255,7 +301,7 @@ const styles = {
     backgroundColor: colors.surface,
     borderRadius: '12px',
     padding: spacing.md,
-    boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
+    boxShadow: shadows.sm,
   },
   tableWrapper: {
     overflowX: 'auto',
@@ -269,7 +315,7 @@ const styles = {
     backgroundColor: colors.background,
   },
   th: {
-    padding: '12px',
+    padding: '14px 12px',
     textAlign: 'left',
     fontSize: '13px',
     fontWeight: '600',
@@ -278,22 +324,46 @@ const styles = {
   },
   tableRow: {
     borderBottom: `1px solid ${colors.border}`,
+    transition: 'background-color 0.2s',
   },
   td: {
-    padding: '12px',
+    padding: '14px 12px',
     fontSize: '14px',
     color: colors.textSecondary,
   },
+  nameCell: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  avatar: {
+    width: '36px',
+    height: '36px',
+    borderRadius: '50%',
+    backgroundColor: colors.primary,
+    color: colors.surface,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontSize: '14px',
+    fontWeight: '600',
+  },
+  nameText: {
+    fontWeight: '500',
+    color: colors.textPrimary,
+  },
   badge: {
-    padding: '4px 12px',
-    borderRadius: '12px',
+    padding: '6px 12px',
+    borderRadius: '20px',
     fontSize: '12px',
     fontWeight: '600',
-    display: 'inline-block',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '4px',
   },
   roleBadge: {
-    padding: '4px 12px',
-    borderRadius: '12px',
+    padding: '6px 12px',
+    borderRadius: '20px',
     fontSize: '12px',
     fontWeight: '600',
     display: 'inline-block',
@@ -306,7 +376,7 @@ const styles = {
     fontWeight: '600',
     color: colors.surface,
     cursor: 'pointer',
-    transition: 'opacity 0.2s',
+    transition: 'all 0.2s',
   },
   protectedText: {
     fontSize: '12px',
@@ -337,7 +407,7 @@ const styles = {
     fontSize: '14px',
     fontWeight: '600',
     cursor: 'pointer',
-    transition: 'opacity 0.2s',
+    transition: 'all 0.2s',
   },
   paginationInfo: {
     fontSize: '14px',
