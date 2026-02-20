@@ -3,6 +3,7 @@ import { orderService } from '../api/orderService';
 import { colors, spacing, borderRadius, shadows } from '../theme/colors';
 import ResponsiveTable from '../components/ResponsiveTable';
 import { MdVisibility, MdClose, MdShoppingCart } from 'react-icons/md';
+import { showSuccess, showError } from '../utils/toast';
 
 const Orders = () => {
   const [orders, setOrders] = useState([]);
@@ -29,7 +30,7 @@ const Orders = () => {
       }
     } catch (error) {
       console.error('Error fetching orders:', error);
-      alert('Failed to fetch orders');
+      showError('Failed to fetch orders');
     } finally {
       setLoading(false);
     }
@@ -39,13 +40,13 @@ const Orders = () => {
     try {
       const response = await orderService.updateStatus(orderId, newStatus);
       if (response.success) {
-        alert('Order status updated successfully');
+        showSuccess('Order status updated successfully');
         fetchOrders();
         setShowModal(false);
       }
     } catch (error) {
       console.error('Error updating order status:', error);
-      alert('Failed to update order status');
+      showError('Failed to update order status');
     }
   };
 

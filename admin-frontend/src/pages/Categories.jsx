@@ -3,6 +3,7 @@ import { categoryService } from '../api/categoryService';
 import { uploadService } from '../api/uploadService';
 import { colors, spacing } from '../theme/colors';
 import { MdCloudUpload, MdDelete, MdImage } from 'react-icons/md';
+import { showSuccess, showError, showConfirmation } from '../utils/toast';
 
 const Categories = () => {
   const [categories, setCategories] = useState([]);
@@ -29,11 +30,11 @@ const Categories = () => {
         setCategories(response.data);
       } else {
         console.error('Failed to fetch categories:', response);
-        alert('Failed to fetch categories');
+        showError('Failed to fetch categories');
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
-      alert(`Failed to fetch categories: ${error.message || 'Unknown error'}`);
+      showError(`Failed to fetch categories: ${error.message || 'Unknown error'}`);
     } finally {
       setLoading(false);
     }
@@ -48,13 +49,13 @@ const Categories = () => {
 
     // Prevent submission while uploading
     if (uploading) {
-      alert('Please wait for image upload to complete');
+      showError('Please wait for image upload to complete');
       return;
     }
 
     // Validate form
     if (!formData.name || formData.name.trim() === '') {
-      alert('Category name is required');
+      showError('Category name is required');
       return;
     }
 
@@ -64,27 +65,27 @@ const Categories = () => {
         const response = await categoryService.update(editingCategory._id, formData);
         console.log('📥 Update response:', response);
         if (response.success) {
-          alert('Category updated successfully');
+          showSuccess('Category updated successfully');
           fetchCategories();
           handleCloseModal();
         } else {
-          alert(`Failed to update category: ${response.message || 'Unknown error'}`);
+          showError(`Failed to update category: ${response.message || 'Unknown error'}`);
         }
       } else {
         console.log('📝 Creating new category');
         const response = await categoryService.create(formData);
         console.log('📥 Create response:', response);
         if (response.success) {
-          alert('Category created successfully');
+          showSuccess('Category created successfully');
           fetchCategories();
           handleCloseModal();
         } else {
-          alert(`Failed to create category: ${response.message || 'Unknown error'}`);
+          showError(`Failed to create category: ${response.message || 'Unknown error'}`);
         }
       }
     } catch (error) {
       console.error('❌ Error saving category:', error);
-      alert(`Failed to save category: ${error.message || 'Unknown error'}`);
+      showError(`Failed to save category: ${error.message || 'Unknown error'}`);
     }
   };
 
@@ -97,13 +98,13 @@ const Categories = () => {
 
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file');
+      showError('Please select an image file');
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      alert('Image size should be less than 5MB');
+      showError('Image size should be less than 5MB');
       return;
     }
 
@@ -128,12 +129,12 @@ const Categories = () => {
         console.log('✅ Form data updated with image URL');
       } else {
         console.error('❌ Upload failed:', response);
-        alert(`Failed to upload image: ${response.message || 'Unknown error'}`);
+        showError(`Failed to upload image: ${response.message || 'Unknown error'}`);
         setImagePreview(null);
       }
     } catch (error) {
       console.error('❌ Error uploading image:', error);
-      alert(`Failed to upload image: ${error.message || 'Unknown error'}`);
+      showError(`Failed to upload image: ${error.message || 'Unknown error'}`);
       setImagePreview(null);
     } finally {
       setUploading(false);
@@ -157,34 +158,37 @@ const Categories = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Are you sure you want to delete this category?')) return;
-
-    try {
-      const response = await categoryService.delete(id);
-      if (response.success) {
-        alert('Category deleted successfully');
-        fetchCategories();
-      } else {
-        alert(`Failed to delete category: ${response.message || 'Unknown error'}`);
+    showConfirmation(
+      'Are you sure you want to delete this category?',
+      async () => {
+        try {
+          const response = await categoryService.delete(id);
+          if (response.success) {
+            showSuccess('Category deleted successfully');
+            fetchCategories();
+          } else {
+            showError(`Failed to delete category: ${response.message || 'Unknown error'}`);
+          }
+        } catch (error) {
+          console.error('Error deleting category:', error);
+          showError(`Failed to delete category: ${error.message || 'Unknown error'}`);
+        }
       }
-    } catch (error) {
-      console.error('Error deleting category:', error);
-      alert(`Failed to delete category: ${error.message || 'Unknown error'}`);
-    }
+    );
   };
 
   const handleToggleStatus = async (id) => {
     try {
       const response = await categoryService.toggleStatus(id);
       if (response.success) {
-        alert(response.message || 'Category status updated successfully');
+        showSuccess(response.message || 'Category status updated successfully');
         fetchCategories();
       } else {
-        alert(`Failed to update category status: ${response.message || 'Unknown error'}`);
+        showError(`Failed to update category status: ${response.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error('Error toggling category status:', error);
-      alert(`Failed to update category status: ${error.message || 'Unknown error'}`);
+      showError(`Failed to update category status: ${error.message || 'Unknown error'}`);
     }
   };
 

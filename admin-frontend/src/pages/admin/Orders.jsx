@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { colors, spacing } from '../../theme/colors';
 import axios from '../../api/axios';
+import { showError } from '../../utils/toast';
 
 const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
@@ -22,7 +23,7 @@ const AdminOrders = () => {
       }
     } catch (error) {
       console.error('Error fetching orders:', error);
-      alert('Failed to fetch orders');
+      showError('Failed to fetch orders');
     } finally {
       setLoading(false);
     }

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { authService } from '../api/authService';
 import { colors, spacing, shadows, borderRadius } from '../theme/colors';
 import { MdEmail, MdLock, MdLogin, MdStorefront } from 'react-icons/md';
+import { showSuccess, showError } from '../utils/toast';
 
 const Login = ({ setIsAuthenticated }) => {
   const [email, setEmail] = useState('');
@@ -20,6 +21,7 @@ const Login = ({ setIsAuthenticated }) => {
       const response = await authService.login(email, password);
       if (response.success) {
         setIsAuthenticated(true);
+        showSuccess('Login successful! Welcome back.');
         
         // Get user role and redirect accordingly
         const user = authService.getStoredUser();
@@ -32,7 +34,9 @@ const Login = ({ setIsAuthenticated }) => {
         }
       }
     } catch (err) {
-      setError(err.message || 'Login failed. Please try again.');
+      const errorMsg = err.message || 'Login failed. Please try again.';
+      setError(errorMsg);
+      showError(errorMsg);
     } finally {
       setLoading(false);
     }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { colors, spacing, borderRadius, shadows } from '../theme/colors';
+import { showSuccess, showError } from '../utils/toast';
 import { 
   MdAssignmentReturn, 
   MdVisibility, 
@@ -61,13 +62,13 @@ const Returns = () => {
       } else {
         console.error('Unexpected response structure:', response);
         console.error('Expected structure: { success: true, data: { returns: [], pagination: {} } }');
-        alert('Failed to load returns. Check console for details.');
+        showError('Failed to load returns. Check console for details.');
         setReturns([]);
       }
     } catch (error) {
       console.error('Error fetching returns:', error);
       console.error('Error details:', error.response || error.message);
-      alert(error.message || 'Failed to fetch returns');
+      showError(error.message || 'Failed to fetch returns');
       setReturns([]);
     } finally {
       setLoading(false);
@@ -88,12 +89,12 @@ const Returns = () => {
       if (pickupScheduledAt) data.pickupScheduledAt = pickupScheduledAt;
 
       await updateReturnStatus(selectedReturn._id, data);
-      alert('Return status updated successfully');
+      showSuccess('Return status updated successfully');
       setShowModal(false);
       fetchReturns();
     } catch (error) {
       console.error('Error updating return:', error);
-      alert(error.response?.data?.message || 'Failed to update return status');
+      showError(error.response?.data?.message || 'Failed to update return status');
     } finally {
       setUpdating(false);
     }
@@ -359,7 +360,7 @@ const ReturnDetailsModal = ({ returnItem, onClose, onUpdateStatus, updating }) =
 
   const handleSubmit = () => {
     if (status === returnItem.status && !adminNotes) {
-      alert('Please change status or add admin notes');
+      showError('Please change status or add admin notes');
       return;
     }
     onUpdateStatus(status, adminNotes, null, pickupDate || null);

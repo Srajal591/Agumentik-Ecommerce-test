@@ -4,6 +4,7 @@ import { productService } from '../api/productService';
 import { categoryService } from '../api/categoryService';
 import { uploadService } from '../api/uploadService';
 import { colors, spacing } from '../theme/colors';
+import { showSuccess, showError } from '../utils/toast';
 
 const AddProduct = () => {
   const navigate = useNavigate();
@@ -40,7 +41,7 @@ const AddProduct = () => {
       }
     } catch (error) {
       console.error('Error fetching categories:', error);
-      alert('Failed to fetch categories');
+      showError('Failed to fetch categories');
     }
   };
 
@@ -74,13 +75,13 @@ const AddProduct = () => {
 
       if (uploadedUrls.length > 0) {
         setFormData({ ...formData, images: [...formData.images, ...uploadedUrls] });
-        alert(`${uploadedUrls.length} image(s) uploaded successfully`);
+        showSuccess(`${uploadedUrls.length} image(s) uploaded successfully`);
       } else {
-        alert('Failed to upload images. Please try again.');
+        showError('Failed to upload images. Please try again.');
       }
     } catch (error) {
       console.error('Error uploading images:', error);
-      alert('Failed to upload images: ' + (error.message || 'Unknown error'));
+      showError('Failed to upload images: ' + (error.message || 'Unknown error'));
     } finally {
       setUploadingImages(false);
     }
@@ -156,7 +157,7 @@ const AddProduct = () => {
     e.preventDefault();
 
     if (!validate()) {
-      alert('Please fix the errors in the form');
+      showError('Please fix the errors in the form');
       return;
     }
 
@@ -177,15 +178,15 @@ const AddProduct = () => {
       console.log('✅ Product created:', response);
       
       if (response.success) {
-        alert('Product created successfully!');
+        showSuccess('Product created successfully!');
         navigate('/products');
       } else {
-        alert('Failed to create product: ' + (response.message || 'Unknown error'));
+        showError('Failed to create product: ' + (response.message || 'Unknown error'));
       }
     } catch (error) {
       console.error('❌ Error creating product:', error);
       const errorMessage = error?.message || error?.error || 'Failed to create product';
-      alert(errorMessage);
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }

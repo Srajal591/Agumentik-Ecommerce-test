@@ -4,6 +4,7 @@ import { productService } from '../api/productService';
 import { categoryService } from '../api/categoryService';
 import { colors, spacing, shadows } from '../theme/colors';
 import { MdAdd, MdDelete, MdSearch, MdFilterList } from 'react-icons/md';
+import { showSuccess, showError, showConfirmation } from '../utils/toast';
 
 const Products = () => {
   const [products, setProducts] = useState([]);
@@ -46,25 +47,30 @@ const Products = () => {
       }
     } catch (error) {
       console.error('Error fetching products:', error);
-      alert('Failed to fetch products');
+      showError('Failed to fetch products');
     } finally {
       setLoading(false);
     }
   };
 
   const handleDelete = async (id) => {
-    if (!confirm('Are you sure you want to delete this product?')) return;
-
-    try {
-      const response = await productService.delete(id);
-      if (response.success) {
-        alert('Product deleted successfully');
-        fetchProducts();
+    showConfirmation(
+      'Are you sure you want to delete this product?',
+      async () => {
+        try {
+          const response = await productService.delete(id);
+          if (response.success) {
+            showSuccess('Product deleted successfully');
+            fetchProducts();
+          } else {
+            showError('Failed to delete product');
+          }
+        } catch (error) {
+          console.error('Error deleting product:', error);
+          showError('Failed to delete product');
+        }
       }
-    } catch (error) {
-      console.error('Error deleting product:', error);
-      alert('Failed to delete product');
-    }
+    );
   };
 
   if (loading) {

@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ticketService } from '../api/ticketService';
 import { colors, spacing, shadows } from '../theme/colors';
+import { showSuccess, showError } from '../utils/toast';
 import { 
   MdConfirmationNumber, 
   MdFilterList,
@@ -41,7 +42,7 @@ const Tickets = () => {
       }
     } catch (error) {
       console.error('Error fetching tickets:', error);
-      alert('Failed to fetch tickets');
+      showError('Failed to fetch tickets');
     } finally {
       setLoading(false);
     }
@@ -51,12 +52,12 @@ const Tickets = () => {
     try {
       const response = await ticketService.updateStatus(ticketId, newStatus);
       if (response.success) {
-        alert('Ticket status updated successfully');
+        showSuccess('Ticket status updated successfully');
         fetchTickets();
       }
     } catch (error) {
       console.error('Error updating ticket status:', error);
-      alert('Failed to update ticket status');
+      showError('Failed to update ticket status');
     }
   };
 
@@ -69,7 +70,7 @@ const Tickets = () => {
       }
     } catch (error) {
       console.error('Error fetching ticket details:', error);
-      alert('Failed to fetch ticket details');
+      showError('Failed to fetch ticket details');
     }
   };
 
@@ -81,11 +82,11 @@ const Tickets = () => {
       if (response.success) {
         setMessage('');
         setSelectedTicket(response.data);
-        alert('Message sent successfully');
+        showSuccess('Message sent successfully');
       }
     } catch (error) {
       console.error('Error sending message:', error);
-      alert('Failed to send message');
+      showError('Failed to send message');
     }
   };
 

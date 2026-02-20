@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { colors, spacing } from '../../theme/colors';
 import { MdAdd, MdEdit, MdDelete, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import axios from '../../api/axios';
+import { showSuccess, showError } from '../../utils/toast';
 
 const AdminProducts = () => {
   const [products, setProducts] = useState([]);
@@ -23,7 +24,7 @@ const AdminProducts = () => {
       }
     } catch (error) {
       console.error('Error fetching products:', error);
-      alert('Failed to fetch products');
+      showError('Failed to fetch products');
     } finally {
       setLoading(false);
     }
@@ -36,12 +37,12 @@ const AdminProducts = () => {
       });
       
       if (response.success) {
-        alert('Product status updated successfully');
+        showSuccess('Product status updated successfully');
         fetchProducts();
       }
     } catch (error) {
       console.error('Error updating product status:', error);
-      alert('Failed to update product status');
+      showError('Failed to update product status');
     }
   };
 

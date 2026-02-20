@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { userService } from '../api/userService';
 import { colors, spacing, shadows } from '../theme/colors';
+import { showSuccess, showError, showConfirmation } from '../utils/toast';
 import { 
   MdPeople, 
   MdAdminPanelSettings, 
@@ -34,25 +35,30 @@ const Users = () => {
       }
     } catch (error) {
       console.error('Error fetching users:', error);
-      alert('Failed to fetch users');
+      showError('Failed to fetch users');
     } finally {
       setLoading(false);
     }
   };
 
   const handleToggleBlock = async (userId) => {
-    if (!confirm('Are you sure you want to toggle block status for this user?')) return;
-
-    try {
-      const response = await userService.toggleBlock(userId);
-      if (response.success) {
-        fetchUsers();
-        alert('User status updated successfully');
+    showConfirmation(
+      'Are you sure you want to toggle block status for this user?',
+      async () => {
+        try {
+          const response = await userService.toggleBlock(userId);
+          if (response.success) {
+            fetchUsers();
+            showSuccess('User status updated successfully');
+          } else {
+            showError('Failed to update user status');
+          }
+        } catch (error) {
+          console.error('Error toggling user block:', error);
+          showError(error.message || 'Failed to update user status');
+        }
       }
-    } catch (error) {
-      console.error('Error toggling user block:', error);
-      alert(error.message || 'Failed to update user status');
-    }
+    );
   };
 
   const handleRoleFilterChange = (filter) => {

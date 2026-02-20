@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { colors, spacing } from '../theme/colors';
 import { MdAdd, MdBlock, MdCheckCircle } from 'react-icons/md';
 import axios from '../api/axios';
+import { showSuccess, showError, showConfirmation } from '../utils/toast';
 
 const AdminManagement = () => {
   const [admins, setAdmins] = useState([]);
@@ -28,7 +29,7 @@ const AdminManagement = () => {
       }
     } catch (error) {
       console.error('Error fetching admins:', error);
-      alert('Failed to fetch admins');
+      showError('Failed to fetch admins');
     } finally {
       setLoading(false);
     }
@@ -39,13 +40,13 @@ const AdminManagement = () => {
 
     // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      alert('Passwords do not match');
+      showError('Passwords do not match');
       return;
     }
 
     // Validate password length
     if (formData.password.length < 6) {
-      alert('Password must be at least 6 characters');
+      showError('Password must be at least 6 characters');
       return;
     }
 
@@ -54,45 +55,55 @@ const AdminManagement = () => {
       const response = await axios.post('/admin-management', dataToSend);
       
       if (response.success) {
-        alert('Admin created successfully');
+        showSuccess('Admin created successfully');
         fetchAdmins();
         handleCloseModal();
       }
     } catch (error) {
       console.error('Error creating admin:', error);
-      alert(error.message || 'Failed to create admin');
+      showError(error.message || 'Failed to create admin');
     }
   };
 
   const handleToggleBlock = async (adminId, currentStatus) => {
     const action = currentStatus ? 'unblock' : 'block';
-    if (!window.confirm(`Are you sure you want to ${action} this admin?`)) return;
-
-    try {
-      const response = await axios.patch(`/admin-management/${adminId}/toggle-block`);
-      if (response.success) {
-        alert(response.message);
-        fetchAdmins();
+    showConfirmation(
+      `Are you sure you want to ${action} this admin?`,
+      async () => {
+        try {
+          const response = await axios.patch(`/admin-management/${adminId}/toggle-block`);
+          if (response.success) {
+            showSuccess(response.message);
+            fetchAdmins();
+          } else {
+            showError('Failed to update admin status');
+          }
+        } catch (error) {
+          console.error('Error toggling admin block:', error);
+          showError('Failed to update admin status');
+        }
       }
-    } catch (error) {
-      console.error('Error toggling admin block:', error);
-      alert('Failed to update admin status');
-    }
+    );
   };
 
   const handleDelete = async (adminId) => {
-    if (!window.confirm('Are you sure you want to delete this admin?')) return;
-
-    try {
-      const response = await axios.delete(`/admin-management/${adminId}`);
-      if (response.success) {
-        alert('Admin deleted successfully');
-        fetchAdmins();
+    showConfirmation(
+      'Are you sure you want to delete this admin?',
+      async () => {
+        try {
+          const response = await axios.delete(`/admin-management/${adminId}`);
+          if (response.success) {
+            showSuccess('Admin deleted successfully');
+            fetchAdmins();
+          } else {
+            showError('Failed to delete admin');
+          }
+        } catch (error) {
+          console.error('Error deleting admin:', error);
+          showError('Failed to delete admin');
+        }
       }
-    } catch (error) {
-      console.error('Error deleting admin:', error);
-      alert('Failed to delete admin');
-    }
+    );
   };
 
   const handleCloseModal = () => {
