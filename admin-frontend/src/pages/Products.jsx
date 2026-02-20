@@ -435,4 +435,64 @@ const styles = {
   },
 };
 
+// Add scrollbar styling
+const scrollbarStyles = `
+  .tableWrapper {
+    display: block;
+  }
+
+  .tableWrapper table {
+    display: table;
+    table-layout: auto;
+  }
+
+  .tableWrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-track {
+    background: ${colors.background};
+    border-radius: 4px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-thumb {
+    background: ${colors.border};
+    border-radius: 4px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-thumb:hover {
+    background: ${colors.primary};
+  }
+
+  @media (max-width: 1024px) {
+    .tableWrapper {
+      max-height: 500px !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .tableWrapper {
+      max-height: 450px !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .tableWrapper {
+      max-height: 400px !important;
+    }
+  }
+`;
+
+if (typeof document !== 'undefined') {
+  const existingStyle = document.getElementById('products-scrollbar-styles');
+  if (existingStyle) {
+    existingStyle.remove();
+  }
+  const styleSheet = document.createElement('style');
+  styleSheet.id = 'products-scrollbar-styles';
+  styleSheet.textContent = scrollbarStyles;
+  document.head.appendChild(styleSheet);
+}
+
 export default Products;

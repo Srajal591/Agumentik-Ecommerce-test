@@ -132,7 +132,8 @@ const AdminManagement = () => {
       </div>
 
       <div style={styles.tableContainer}>
-        <table style={styles.table}>
+        <div style={styles.tableWrapper} className="tableWrapper">
+          <table style={styles.table}>
           <thead>
             <tr style={styles.tableHeader}>
               <th style={styles.th}>Name</th>
@@ -189,6 +190,62 @@ const AdminManagement = () => {
             ))}
           </tbody>
         </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="mobile-card-view" style={styles.mobileCardView}>
+          {admins.map((admin) => (
+            <div key={admin._id} style={styles.mobileCard}>
+              <div style={styles.mobileCardHeader}>
+                <div>
+                  <div style={styles.mobileCardTitle}>{admin.name}</div>
+                  <div style={styles.mobileSubtext}>{admin.mobile}</div>
+                </div>
+                <span
+                  style={{
+                    ...styles.badge,
+                    backgroundColor: admin.isBlocked ? colors.errorLight : colors.successLight,
+                    color: admin.isBlocked ? colors.error : colors.success,
+                  }}
+                >
+                  {admin.isBlocked ? 'Blocked' : 'Active'}
+                </span>
+              </div>
+              
+              <div style={styles.mobileCardBody}>
+                <div style={styles.mobileRow}>
+                  <span style={styles.mobileLabel}>Email:</span>
+                  <span style={styles.mobileValue}>{admin.email}</span>
+                </div>
+                <div style={styles.mobileRow}>
+                  <span style={styles.mobileLabel}>Created:</span>
+                  <span style={styles.mobileValue}>{new Date(admin.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              <div style={styles.mobileActions}>
+                <button
+                  onClick={() => handleToggleBlock(admin._id, admin.isBlocked)}
+                  style={{
+                    ...styles.mobileButton,
+                    backgroundColor: admin.isBlocked ? colors.success : colors.warning,
+                  }}
+                >
+                  {admin.isBlocked ? 'Unblock Admin' : 'Block Admin'}
+                </button>
+                <button
+                  onClick={() => handleDelete(admin._id)}
+                  style={{
+                    ...styles.mobileButton,
+                    backgroundColor: colors.error,
+                  }}
+                >
+                  Delete Admin
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {admins.length === 0 && (
           <div style={styles.emptyState}>
@@ -317,12 +374,23 @@ const styles = {
     boxShadow: '0 2px 4px rgba(0,0,0,0.08)',
     overflow: 'hidden',
   },
+  tableWrapper: {
+    width: '100%',
+    overflowX: 'auto',
+    overflowY: 'auto',
+    maxHeight: '600px',
+    position: 'relative',
+  },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
+    minWidth: '100%',
   },
   tableHeader: {
     backgroundColor: colors.background,
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
   },
   th: {
     padding: spacing.md,
@@ -439,6 +507,147 @@ const styles = {
     fontWeight: '600',
     cursor: 'pointer',
   },
+  // Mobile Card Styles
+  mobileCardView: {
+    display: 'none',
+    gap: spacing.md,
+  },
+  mobileCard: {
+    backgroundColor: colors.surface,
+    border: `1px solid ${colors.border}`,
+    borderRadius: '12px',
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  mobileCardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.md,
+    paddingBottom: spacing.sm,
+    borderBottom: `1px solid ${colors.border}`,
+  },
+  mobileCardTitle: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: colors.textPrimary,
+    marginBottom: '4px',
+  },
+  mobileCardBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  mobileRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  mobileLabel: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  mobileValue: {
+    fontSize: '13px',
+    color: colors.textPrimary,
+    textAlign: 'right',
+    wordBreak: 'break-word',
+  },
+  mobileSubtext: {
+    fontSize: '12px',
+    color: colors.textSecondary,
+    marginTop: '2px',
+  },
+  mobileActions: {
+    display: 'flex',
+    gap: spacing.xs,
+    flexDirection: 'column',
+  },
+  mobileButton: {
+    width: '100%',
+    padding: '10px',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    color: colors.surface,
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
 };
+
+// Add scrollbar styling and responsive card view
+const scrollbarStyles = `
+  .tableWrapper {
+    display: block;
+  }
+
+  .tableWrapper table {
+    display: table;
+    table-layout: auto;
+  }
+
+  .tableWrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-track {
+    background: ${colors.background};
+    border-radius: 4px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-thumb {
+    background: ${colors.border};
+    border-radius: 4px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-thumb:hover {
+    background: ${colors.primary};
+  }
+
+  /* Desktop and Tablet - Table View */
+  @media (min-width: 769px) {
+    .mobile-card-view {
+      display: none !important;
+    }
+    .tableWrapper {
+      display: block !important;
+      max-height: 600px;
+    }
+  }
+
+  /* Mobile - Card View */
+  @media (max-width: 768px) {
+    .tableWrapper {
+      display: none !important;
+    }
+    .mobile-card-view {
+      display: block !important;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .mobile-card-view {
+      max-height: 500px;
+    }
+  }
+`;
+
+if (typeof document !== 'undefined') {
+  const existingStyle = document.getElementById('admin-management-scrollbar-styles');
+  if (existingStyle) {
+    existingStyle.remove();
+  }
+  const styleSheet = document.createElement('style');
+  styleSheet.id = 'admin-management-scrollbar-styles';
+  styleSheet.textContent = scrollbarStyles;
+  document.head.appendChild(styleSheet);
+}
 
 export default AdminManagement;

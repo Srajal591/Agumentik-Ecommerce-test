@@ -60,7 +60,7 @@ export const showConfirmation = (message, onConfirm, onCancel) => {
           }}
           style={{
             padding: '6px 16px',
-            backgroundColor: '#3b82f6',
+            backgroundColor: '#396f4cff',
             color: '#fff',
             border: 'none',
             borderRadius: '6px',

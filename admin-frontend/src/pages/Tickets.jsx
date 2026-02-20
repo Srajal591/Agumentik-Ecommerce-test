@@ -196,7 +196,7 @@ const Tickets = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <div style={styles.tableWrapper}>
+        <div style={styles.tableWrapper} className="tableWrapper">
           <table style={styles.table}>
             <thead>
               <tr style={styles.tableHeader}>
@@ -485,15 +485,24 @@ const styles = {
     boxShadow: shadows.sm,
   },
   tableWrapper: {
+    width: '100%',
     overflowX: 'auto',
+    overflowY: 'auto',
+    maxHeight: '600px',
+    position: 'relative',
+    border: `1px solid ${colors.border}`,
+    borderRadius: '8px',
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
-    minWidth: '1000px',
+    minWidth: '100%',
   },
   tableHeader: {
     backgroundColor: colors.background,
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
   },
   th: {
     padding: '14px 12px',
@@ -757,5 +766,65 @@ const styles = {
     alignSelf: 'flex-end',
   },
 };
+
+// Add scrollbar styling
+const scrollbarStyles = `
+  .tableWrapper {
+    display: block;
+  }
+
+  .tableWrapper table {
+    display: table;
+    table-layout: auto;
+  }
+
+  .tableWrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-track {
+    background: ${colors.background};
+    border-radius: 4px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-thumb {
+    background: ${colors.border};
+    border-radius: 4px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-thumb:hover {
+    background: ${colors.primary};
+  }
+
+  @media (max-width: 1024px) {
+    .tableWrapper {
+      max-height: 500px !important;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .tableWrapper {
+      max-height: 450px !important;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .tableWrapper {
+      max-height: 400px !important;
+    }
+  }
+`;
+
+if (typeof document !== 'undefined') {
+  const existingStyle = document.getElementById('tickets-scrollbar-styles');
+  if (existingStyle) {
+    existingStyle.remove();
+  }
+  const styleSheet = document.createElement('style');
+  styleSheet.id = 'tickets-scrollbar-styles';
+  styleSheet.textContent = scrollbarStyles;
+  document.head.appendChild(styleSheet);
+}
 
 export default Tickets;

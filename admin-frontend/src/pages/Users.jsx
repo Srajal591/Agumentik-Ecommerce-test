@@ -117,7 +117,8 @@ const Users = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.1 }}
       >
-        <div style={styles.tableWrapper}>
+        {/* Desktop/Tablet Table View */}
+        <div style={styles.tableWrapper} className="tableWrapper">
           <table style={styles.table}>
             <thead>
               <tr style={styles.tableHeader}>
@@ -200,6 +201,86 @@ const Users = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="mobile-card-view" style={styles.mobileCardView}>
+          {users.map((user) => (
+            <motion.div
+              key={user._id}
+              style={styles.mobileCard}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              whileHover={{ scale: 1.02 }}
+            >
+              <div style={styles.mobileCardHeader}>
+                <div style={styles.nameCell}>
+                  <div style={styles.avatar}>
+                    {user.name ? user.name.charAt(0).toUpperCase() : 'U'}
+                  </div>
+                  <div>
+                    <div style={styles.nameText}>{user.name || 'N/A'}</div>
+                    <div style={styles.mobileSubtext}>{user.mobile}</div>
+                  </div>
+                </div>
+                <span
+                  style={{
+                    ...styles.badge,
+                    backgroundColor: user.isBlocked ? colors.errorLight : colors.successLight,
+                    color: user.isBlocked ? colors.error : colors.success,
+                  }}
+                >
+                  {user.isBlocked ? <><MdBlock size={14} /> Blocked</> : <><MdCheckCircle size={14} /> Active</>}
+                </span>
+              </div>
+              
+              <div style={styles.mobileCardBody}>
+                <div style={styles.mobileRow}>
+                  <span style={styles.mobileLabel}>Email:</span>
+                  <span style={styles.mobileValue}>{user.email || 'N/A'}</span>
+                </div>
+                <div style={styles.mobileRow}>
+                  <span style={styles.mobileLabel}>Role:</span>
+                  <span
+                    style={{
+                      ...styles.roleBadge,
+                      backgroundColor: user.role === 'super_admin' 
+                        ? colors.primary 
+                        : user.role === 'admin' 
+                        ? colors.info 
+                        : colors.background,
+                      color: user.role === 'super_admin' || user.role === 'admin'
+                        ? colors.surface
+                        : colors.textPrimary,
+                    }}
+                  >
+                    {user.role === 'super_admin' ? 'Super Admin' : user.role === 'admin' ? 'Admin' : 'User'}
+                  </span>
+                </div>
+                <div style={styles.mobileRow}>
+                  <span style={styles.mobileLabel}>Joined:</span>
+                  <span style={styles.mobileValue}>{new Date(user.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              {user.role !== 'super_admin' && (
+                <motion.button
+                  onClick={() => handleToggleBlock(user._id)}
+                  style={{
+                    ...styles.mobileButton,
+                    backgroundColor: user.isBlocked ? colors.success : colors.error,
+                  }}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  {user.isBlocked ? 'Unblock User' : 'Block User'}
+                </motion.button>
+              )}
+              {user.role === 'super_admin' && (
+                <div style={styles.mobileProtected}>Protected Account</div>
+              )}
+            </motion.div>
+          ))}
         </div>
 
         {users.length === 0 && (
@@ -310,15 +391,24 @@ const styles = {
     boxShadow: shadows.sm,
   },
   tableWrapper: {
+    width: '100%',
     overflowX: 'auto',
+    overflowY: 'auto',
+    maxHeight: '600px',
+    position: 'relative',
+    border: `1px solid ${colors.border}`,
+    borderRadius: '8px',
   },
   table: {
     width: '100%',
     borderCollapse: 'collapse',
-    minWidth: '900px',
+    minWidth: '100%',
   },
   tableHeader: {
     backgroundColor: colors.background,
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
   },
   th: {
     padding: '14px 12px',
@@ -419,6 +509,149 @@ const styles = {
     fontSize: '14px',
     color: colors.textSecondary,
   },
+  // Mobile Card Styles
+  mobileCardView: {
+    display: 'none',
+    gap: spacing.md,
+  },
+  mobileCard: {
+    backgroundColor: colors.surface,
+    border: `1px solid ${colors.border}`,
+    borderRadius: '12px',
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  mobileCardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.md,
+    paddingBottom: spacing.sm,
+    borderBottom: `1px solid ${colors.border}`,
+  },
+  mobileCardBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  mobileRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  mobileLabel: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  mobileValue: {
+    fontSize: '13px',
+    color: colors.textPrimary,
+    textAlign: 'right',
+  },
+  mobileSubtext: {
+    fontSize: '12px',
+    color: colors.textSecondary,
+    marginTop: '2px',
+  },
+  mobileButton: {
+    width: '100%',
+    padding: '10px',
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    color: colors.surface,
+    cursor: 'pointer',
+    transition: 'all 0.2s',
+  },
+  mobileProtected: {
+    width: '100%',
+    padding: '10px',
+    textAlign: 'center',
+    fontSize: '13px',
+    color: colors.textLight,
+    fontStyle: 'italic',
+    backgroundColor: colors.background,
+    borderRadius: '8px',
+  },
 };
+
+// Add scrollbar styling and responsive card view
+const scrollbarStyles = `
+  .tableWrapper {
+    display: block;
+  }
+
+  .tableWrapper table {
+    display: table;
+    table-layout: auto;
+  }
+
+  .tableWrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-track {
+    background: ${colors.background};
+    border-radius: 4px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-thumb {
+    background: ${colors.border};
+    border-radius: 4px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-thumb:hover {
+    background: ${colors.primary};
+  }
+
+  .tableWrapper table tbody tr:hover {
+    background-color: ${colors.background};
+  }
+
+  /* Desktop and Tablet - Table View */
+  @media (min-width: 769px) {
+    .mobile-card-view {
+      display: none !important;
+    }
+    .tableWrapper {
+      display: block !important;
+      max-height: 600px;
+    }
+  }
+
+  /* Mobile - Card View */
+  @media (max-width: 768px) {
+    .tableWrapper {
+      display: none !important;
+    }
+    .mobile-card-view {
+      display: block !important;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .mobile-card-view {
+      max-height: 500px;
+    }
+  }
+`;
+
+if (typeof document !== 'undefined') {
+  const existingStyle = document.getElementById('users-scrollbar-styles');
+  if (existingStyle) {
+    existingStyle.remove();
+  }
+  const styleSheet = document.createElement('style');
+  styleSheet.id = 'users-scrollbar-styles';
+  styleSheet.textContent = scrollbarStyles;
+  document.head.appendChild(styleSheet);
+}
 
 export default Users;

@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { orderService } from '../api/orderService';
 import { colors, spacing, borderRadius, shadows } from '../theme/colors';
-import ResponsiveTable from '../components/ResponsiveTable';
 import { MdVisibility, MdClose, MdShoppingCart } from 'react-icons/md';
 import { showSuccess, showError } from '../utils/toast';
 
@@ -79,8 +78,8 @@ const Orders = () => {
           </div>
         </div>
 
-        <ResponsiveTable>
-          <table style={styles.table} className="table-wrapper">
+        <div className="tableWrapper" style={styles.tableWrapper}>
+          <table style={styles.table}>
             <thead>
               <tr style={styles.tableHeader}>
                 <th style={styles.th}>Order #</th>
@@ -145,7 +144,66 @@ const Orders = () => {
               )}
             </tbody>
           </table>
-        </ResponsiveTable>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="mobile-card-view" style={styles.mobileCardView}>
+          {orders.length > 0 ? (
+            orders.map((order) => (
+              <div key={order._id} style={styles.mobileCard}>
+                <div style={styles.mobileCardHeader}>
+                  <div>
+                    <div style={styles.mobileCardTitle}>Order #{order.orderNumber}</div>
+                    <div style={styles.mobileSubtext}>{order.user?.name || order.user?.mobile}</div>
+                  </div>
+                  <span style={getStatusStyle(order.orderStatus)}>{order.orderStatus}</span>
+                </div>
+                
+                <div style={styles.mobileCardBody}>
+                  <div style={styles.mobileRow}>
+                    <span style={styles.mobileLabel}>Items:</span>
+                    <span style={styles.mobileValue}>{order.items.length}</span>
+                  </div>
+                  <div style={styles.mobileRow}>
+                    <span style={styles.mobileLabel}>Total:</span>
+                    <span style={{...styles.mobileValue, fontWeight: '600', color: colors.primary}}>₹{order.total}</span>
+                  </div>
+                  <div style={styles.mobileRow}>
+                    <span style={styles.mobileLabel}>Payment:</span>
+                    <span style={{
+                      padding: '4px 10px',
+                      borderRadius: '12px',
+                      fontSize: '11px',
+                      fontWeight: '600',
+                      backgroundColor: order.paymentMethod === 'razorpay' ? colors.primaryLight : colors.backgroundDark,
+                      color: order.paymentMethod === 'razorpay' ? colors.primary : colors.textSecondary,
+                    }}>
+                      {order.paymentMethod === 'razorpay' ? '💳 Online' : '💵 COD'}
+                    </span>
+                  </div>
+                  <div style={styles.mobileRow}>
+                    <span style={styles.mobileLabel}>Payment Status:</span>
+                    <span style={getStatusStyle(order.paymentStatus)}>{order.paymentStatus}</span>
+                  </div>
+                  <div style={styles.mobileRow}>
+                    <span style={styles.mobileLabel}>Date:</span>
+                    <span style={styles.mobileValue}>{new Date(order.createdAt).toLocaleDateString()}</span>
+                  </div>
+                </div>
+
+                <button onClick={() => handleViewDetails(order)} style={styles.mobileButton}>
+                  <MdVisibility style={{marginRight: '6px'}} />
+                  View Details
+                </button>
+              </div>
+            ))
+          ) : (
+            <div style={styles.emptyState}>
+              <MdShoppingCart style={styles.emptyIcon} />
+              <p style={styles.emptyText}>No orders found</p>
+            </div>
+          )}
+        </div>
 
         {/* Pagination */}
         {pagination.total > pagination.limit && (
@@ -571,6 +629,79 @@ const styles = {
     transition: 'all 0.3s ease',
     boxShadow: shadows.sm,
   },
+  // Mobile Card Styles
+  mobileCardView: {
+    display: 'none',
+  },
+  mobileCard: {
+    backgroundColor: colors.surface,
+    border: `1px solid ${colors.border}`,
+    borderRadius: '12px',
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  mobileCardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: spacing.md,
+    paddingBottom: spacing.sm,
+    borderBottom: `1px solid ${colors.border}`,
+  },
+  mobileCardTitle: {
+    fontSize: '16px',
+    fontWeight: '600',
+    color: colors.primary,
+    marginBottom: '4px',
+  },
+  mobileCardBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  mobileRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: spacing.sm,
+  },
+  mobileLabel: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  mobileValue: {
+    fontSize: '13px',
+    color: colors.textPrimary,
+    textAlign: 'right',
+  },
+  mobileSubtext: {
+    fontSize: '12px',
+    color: colors.textSecondary,
+  },
+  mobileButton: {
+    width: '100%',
+    padding: '12px',
+    backgroundColor: colors.primary,
+    color: colors.surface,
+    border: 'none',
+    borderRadius: '8px',
+    fontSize: '14px',
+    fontWeight: '600',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s',
+  },
+  tableWrapper: {
+    width: '100%',
+    overflowX: 'auto',
+    overflowY: 'auto',
+    maxHeight: '600px',
+    position: 'relative',
+  },
 };
 
 // Add animations and responsive styles
@@ -657,8 +788,45 @@ const responsiveStyles = `
     transform: translateY(0);
   }
 
-  /* Responsive styles */
+  .tableWrapper::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-track {
+    background: ${colors.background};
+    border-radius: 4px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-thumb {
+    background: ${colors.border};
+    border-radius: 4px;
+  }
+
+  .tableWrapper::-webkit-scrollbar-thumb:hover {
+    background: ${colors.primary};
+  }
+
+  /* Desktop and Tablet - Table View */
+  @media (min-width: 769px) {
+    .mobile-card-view {
+      display: none !important;
+    }
+    .tableWrapper {
+      display: block !important;
+    }
+  }
+
+  /* Mobile - Card View */
   @media (max-width: 768px) {
+    .tableWrapper {
+      display: none !important;
+    }
+    .mobile-card-view {
+      display: block !important;
+      max-height: 600px;
+      overflow-y: auto;
+    }
     .orders-card {
       padding: ${spacing.md};
       border-radius: ${borderRadius.md};
@@ -668,6 +836,9 @@ const responsiveStyles = `
   @media (max-width: 480px) {
     .orders-card {
       padding: ${spacing.sm};
+    }
+    .mobile-card-view {
+      max-height: 500px;
     }
   }
 `;

@@ -396,6 +396,7 @@ const styleSheet = `
     opacity: 0.9;
   }
 
+  /* Tablet and below - hide left branding */
   @media (max-width: 968px) {
     .leftContent {
       display: none !important;
@@ -403,13 +404,26 @@ const styleSheet = `
     .rightContent {
       flex: 1 !important;
       width: 100% !important;
+      padding: 40px 20px !important;
     }
   }
 
+  /* Mobile - smaller card padding */
   @media (max-width: 640px) {
     .floatingCard {
-      padding: 32px 24px !important;
+      padding: 32px 24px 48px 24px !important;
       border-radius: 16px !important;
+      max-width: 100% !important;
+    }
+    .rightContent {
+      padding: 20px 16px !important;
+    }
+  }
+
+  /* Very small mobile */
+  @media (max-width: 480px) {
+    .floatingCard {
+      padding: 24px 20px 40px 20px !important;
     }
   }
 `;
