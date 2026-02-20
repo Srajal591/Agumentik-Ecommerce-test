@@ -28,7 +28,14 @@ connectDB();
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📍 Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
+  
+  // Show correct URL based on environment
+  if (process.env.NODE_ENV === 'production') {
+    console.log(`🔗 API Base URL: https://agumentik-ecommerce-test-1.onrender.com/api`);
+  } else {
+    console.log(`🔗 API Base URL: http://localhost:${PORT}/api`);
+  }
+  
   console.log(`🔌 WebSocket server initialized`);
 });
 
