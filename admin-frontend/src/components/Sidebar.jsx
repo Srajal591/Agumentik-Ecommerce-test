@@ -1,6 +1,7 @@
 import { NavLink, useNavigate } from 'react-router-dom';
 import { authService } from '../api/authService';
 import { colors, spacing } from '../theme/colors';
+import { showConfirmation, showSuccess } from '../utils/toast';
 import { 
   MdDashboard, 
   MdPeople, 
@@ -18,12 +19,15 @@ const Sidebar = ({ setIsAuthenticated, isOpen, onClose }) => {
   const user = authService.getStoredUser();
 
   const handleLogout = () => {
-    const confirmed = window.confirm('Do you want to logout?');
-    if (confirmed) {
-      authService.logout();
-      setIsAuthenticated(false);
-      navigate('/login');
-    }
+    showConfirmation(
+      'Are you sure you want to logout?',
+      () => {
+        authService.logout();
+        setIsAuthenticated(false);
+        showSuccess('Logged out successfully!');
+        navigate('/login');
+      }
+    );
   };
 
   // Super Admin menu items
