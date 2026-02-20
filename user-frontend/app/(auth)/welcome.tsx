@@ -97,7 +97,7 @@ export default function WelcomeScreen() {
           </Text>
           
           <Text style={styles.description}>
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt
+            Discover the latest trends and shop your perfect style with ease — all in one place.
           </Text>
 
           {/* Let's Get Started Button */}
