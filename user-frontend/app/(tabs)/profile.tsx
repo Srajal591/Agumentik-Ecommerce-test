@@ -139,18 +139,24 @@ export default function ProfileScreen() {
     },
     {
       id: '4',
+      title: 'Support Tickets',
+      icon: 'ticket-outline',
+      onPress: () => router.push('/tickets'),
+    },
+    {
+      id: '5',
       title: 'Settings',
       icon: 'settings-outline',
       onPress: () => router.push('/settings'),
     },
     {
-      id: '5',
+      id: '6',
       title: 'Help Center',
       icon: 'help-circle-outline',
       onPress: () => Alert.alert('Help Center', 'Contact us at support@fashionstore.com'),
     },
     {
-      id: '6',
+      id: '7',
       title: 'Privacy Policy',
       icon: 'shield-checkmark-outline',
       onPress: () => Alert.alert('Privacy Policy', 'Privacy policy coming soon'),

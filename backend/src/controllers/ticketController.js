@@ -42,7 +42,10 @@ exports.getTicketById = async (req, res, next) => {
     const ticket = await ticketService.getTicketById(req.params.id);
 
     // Check if user has permission to view this ticket
-    if (req.user.role !== 'admin' && ticket.user._id.toString() !== req.user._id.toString()) {
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'super_admin';
+    const isOwner = ticket.user._id.toString() === req.user._id.toString();
+    
+    if (!isAdmin && !isOwner) {
       return res.status(403).json({
         success: false,
         message: 'Access denied',

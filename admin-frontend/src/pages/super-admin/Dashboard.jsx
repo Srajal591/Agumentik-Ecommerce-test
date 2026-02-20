@@ -7,7 +7,8 @@ import {
   MdShoppingBag, 
   MdShoppingCart, 
   MdAdminPanelSettings,
-  MdAssignment
+  MdAssignment,
+  MdConfirmationNumber
 } from 'react-icons/md';
 import axios from '../../api/axios';
 
@@ -18,6 +19,7 @@ const SuperAdminDashboard = () => {
     totalCategories: 0,
     totalProducts: 0,
     totalOrders: 0,
+    totalTickets: 0,
   });
   const [loading, setLoading] = useState(true);
 
@@ -28,12 +30,13 @@ const SuperAdminDashboard = () => {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const [usersRes, adminsRes, categoriesRes, productsRes, ordersRes] = await Promise.all([
+      const [usersRes, adminsRes, categoriesRes, productsRes, ordersRes, ticketsRes] = await Promise.all([
         axios.get('/users?role=users&limit=1'),
         axios.get('/users?role=admins&limit=1'),
         axios.get('/categories'),
         axios.get('/products?limit=1'),
         axios.get('/orders?limit=1'),
+        axios.get('/tickets?limit=1'),
       ]);
 
       setStats({
@@ -42,6 +45,7 @@ const SuperAdminDashboard = () => {
         totalCategories: categoriesRes.data?.length || 0,
         totalProducts: productsRes.data?.pagination?.total || 0,
         totalOrders: ordersRes.data?.pagination?.total || 0,
+        totalTickets: ticketsRes.data?.pagination?.total || 0,
       });
     } catch (error) {
       console.error('Error fetching stats:', error);
@@ -56,6 +60,7 @@ const SuperAdminDashboard = () => {
     { title: 'Categories', value: stats.totalCategories, icon: MdCategory, color: colors.success },
     { title: 'Products', value: stats.totalProducts, icon: MdShoppingBag, color: colors.warning },
     { title: 'Orders', value: stats.totalOrders, icon: MdShoppingCart, color: colors.error },
+    { title: 'Support Tickets', value: stats.totalTickets, icon: MdConfirmationNumber, color: '#9C27B0' },
   ];
 
   if (loading) {
@@ -99,12 +104,13 @@ const SuperAdminDashboard = () => {
         <h2 style={styles.sectionTitle}>Quick Actions</h2>
         <div style={styles.actionsGrid}>
           {[
-            { icon: MdPeople, label: 'Manage Users', path: '/users' },
-            { icon: MdAdminPanelSettings, label: 'Admin Management', path: '/admin-management' },
-            { icon: MdCategory, label: 'Categories', path: '/categories' },
-            { icon: MdShoppingBag, label: 'Products', path: '/products' },
-            { icon: MdAssignment, label: 'Orders', path: '/orders' },
-            { icon: MdShoppingCart, label: 'Returns', path: '/returns' },
+            { icon: MdPeople, label: 'Manage Users', path: '/super-admin/users' },
+            { icon: MdAdminPanelSettings, label: 'Admin Management', path: '/super-admin/admin-management' },
+            { icon: MdCategory, label: 'Categories', path: '/super-admin/categories' },
+            { icon: MdShoppingBag, label: 'Products', path: '/super-admin/products' },
+            { icon: MdAssignment, label: 'Orders', path: '/super-admin/orders' },
+            { icon: MdConfirmationNumber, label: 'Tickets', path: '/super-admin/tickets' },
+            { icon: MdShoppingCart, label: 'Returns', path: '/super-admin/returns' },
           ].map((action, index) => (
             <motion.button
               key={index}

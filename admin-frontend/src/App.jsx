@@ -86,6 +86,7 @@ function App() {
           <Route path="super-admin/categories" element={userRole === 'super_admin' ? <SuperAdminCategories /> : <Navigate to={getDefaultRoute()} replace />} />
           <Route path="super-admin/products" element={userRole === 'super_admin' ? <SuperAdminProducts /> : <Navigate to={getDefaultRoute()} replace />} />
           <Route path="super-admin/orders" element={userRole === 'super_admin' ? <SuperAdminOrders /> : <Navigate to={getDefaultRoute()} replace />} />
+          <Route path="super-admin/tickets" element={userRole === 'super_admin' ? <SuperAdminTickets /> : <Navigate to={getDefaultRoute()} replace />} />
           <Route path="super-admin/live-chat" element={userRole === 'super_admin' ? <LiveChat /> : <Navigate to={getDefaultRoute()} replace />} />
           <Route path="super-admin/returns" element={userRole === 'super_admin' ? <SuperAdminReturns /> : <Navigate to={getDefaultRoute()} replace />} />
           <Route path="add-product" element={userRole === 'super_admin' || userRole === 'admin' ? <AddProduct /> : <Navigate to={getDefaultRoute()} replace />} />
