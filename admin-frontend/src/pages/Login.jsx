@@ -2,12 +2,13 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../api/authService';
 import { colors, spacing, shadows, borderRadius } from '../theme/colors';
-import { MdEmail, MdLock, MdLogin } from 'react-icons/md';
+import { MdEmail, MdLock, MdLogin, MdVisibility, MdVisibilityOff } from 'react-icons/md';
 import { showSuccess, showError } from '../utils/toast';
 
 const Login = ({ setIsAuthenticated }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
@@ -112,7 +113,7 @@ const Login = ({ setIsAuthenticated }) => {
               <div style={styles.inputWrapper}>
                 <MdLock style={styles.inputIcon} />
                 <input
-                  type="password"
+                  type={showPassword ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
@@ -121,6 +122,19 @@ const Login = ({ setIsAuthenticated }) => {
                   onFocus={(e) => e.target.style.borderColor = colors.primary}
                   onBlur={(e) => e.target.style.borderColor = colors.border}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  style={styles.eyeButton}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = colors.background}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                >
+                  {showPassword ? (
+                    <MdVisibilityOff style={styles.eyeIcon} />
+                  ) : (
+                    <MdVisibility style={styles.eyeIcon} />
+                  )}
+                </button>
               </div>
             </div>
 
@@ -306,7 +320,7 @@ const styles = {
   },
   input: {
     width: '100%',
-    padding: '16px 16px 16px 52px',
+    padding: '16px 52px 16px 52px',
     border: `2px solid ${colors.border}`,
     borderRadius: borderRadius.md,
     fontSize: '15px',
@@ -314,6 +328,23 @@ const styles = {
     transition: 'all 0.3s ease',
     backgroundColor: colors.surface,
     color: colors.textPrimary,
+  },
+  eyeButton: {
+    position: 'absolute',
+    right: '12px',
+    backgroundColor: 'transparent',
+    border: 'none',
+    cursor: 'pointer',
+    padding: '8px',
+    borderRadius: borderRadius.sm,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    transition: 'all 0.2s ease',
+  },
+  eyeIcon: {
+    fontSize: '22px',
+    color: colors.textSecondary,
   },
   button: {
     backgroundColor: colors.primary,
