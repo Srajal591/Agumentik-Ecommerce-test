@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../api/authService';
 import { colors, spacing, shadows, borderRadius } from '../theme/colors';
-import { MdEmail, MdLock, MdLogin, MdStorefront } from 'react-icons/md';
+import { MdEmail, MdLock, MdLogin } from 'react-icons/md';
 import { showSuccess, showError } from '../utils/toast';
 
 const Login = ({ setIsAuthenticated }) => {
@@ -44,22 +44,28 @@ const Login = ({ setIsAuthenticated }) => {
 
   return (
     <div style={styles.container}>
-      {/* Left Side - Branding */}
-      <div style={styles.leftPanel}>
+      {/* Full Screen Background Image */}
+      <div style={styles.backgroundImage}></div>
+      <div style={styles.overlay}></div>
+
+      {/* Left Side - Branding Content */}
+      <div style={styles.leftContent} className="leftContent">
         <div style={styles.brandingContent}>
-          <div style={styles.logoCircleLarge}>
-            <MdStorefront style={styles.logoIconLarge} />
-          </div>
-          <h1 style={styles.brandTitle}>Fashion Store</h1>
-          <p style={styles.brandSubtitle}>Premium E-Commerce Platform</p>
+          <img 
+            src="/agumentik-ecommerce-logo.png" 
+            alt="Fashion Store Logo" 
+            style={styles.logo}
+          />
+          <h1 style={styles.brandTitle}>Fashion Store Admin</h1>
+          <p style={styles.brandSubtitle}>Manage your e-commerce business with ease</p>
           <div style={styles.brandFeatures}>
             <div style={styles.featureItem}>
               <div style={styles.featureDot}></div>
-              <span>Manage Products & Inventory</span>
+              <span>Product & Inventory Management</span>
             </div>
             <div style={styles.featureItem}>
               <div style={styles.featureDot}></div>
-              <span>Track Orders & Shipments</span>
+              <span>Order Tracking & Fulfillment</span>
             </div>
             <div style={styles.featureItem}>
               <div style={styles.featureDot}></div>
@@ -69,9 +75,9 @@ const Login = ({ setIsAuthenticated }) => {
         </div>
       </div>
 
-      {/* Right Side - Login Form */}
-      <div style={styles.rightPanel}>
-        <div style={styles.formContainer}>
+      {/* Right Side - Floating Login Card */}
+      <div style={styles.rightContent} className="rightContent">
+        <div style={styles.floatingCard} className="floatingCard">
           <div style={styles.formHeader}>
             <h2 style={styles.formTitle}>Welcome Back</h2>
             <p style={styles.formSubtitle}>Sign in to your admin account</p>
@@ -92,7 +98,7 @@ const Login = ({ setIsAuthenticated }) => {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="admin@fashionstore.com"
+                  placeholder="Enter your email"
                   required
                   style={styles.input}
                   onFocus={(e) => e.target.style.borderColor = colors.primary}
@@ -135,27 +141,6 @@ const Login = ({ setIsAuthenticated }) => {
               )}
             </button>
           </form>
-
-          <div style={styles.divider}>
-            <span style={styles.dividerText}>Default Credentials</span>
-          </div>
-
-          <div style={styles.credentialsBox}>
-            <div style={styles.credentialRow}>
-              <MdEmail style={styles.credentialIcon} />
-              <div>
-                <div style={styles.credentialLabel}>Email</div>
-                <div style={styles.credentialValue}>admin@fashionstore.com</div>
-              </div>
-            </div>
-            <div style={styles.credentialRow}>
-              <MdLock style={styles.credentialIcon} />
-              <div>
-                <div style={styles.credentialLabel}>Password</div>
-                <div style={styles.credentialValue}>Admin@123</div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -166,58 +151,70 @@ const styles = {
   container: {
     display: 'flex',
     minHeight: '100vh',
-    backgroundColor: colors.background,
+    position: 'relative',
+    overflow: 'hidden',
   },
-  leftPanel: {
+  backgroundImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundImage: 'url(https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1920&h=1080&fit=crop)',
+    backgroundSize: 'cover',
+    backgroundPosition: 'center',
+    zIndex: 0,
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: `linear-gradient(135deg, rgba(112, 79, 56, 0.75) 0%, rgba(92, 63, 46, 0.85) 100%)`,
+    zIndex: 1,
+  },
+  leftContent: {
     flex: 1,
-    background: `linear-gradient(135deg, ${colors.primary} 0%, ${colors.primaryDark} 100%)`,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     padding: '60px',
     position: 'relative',
-    overflow: 'hidden',
+    zIndex: 2,
   },
   brandingContent: {
     textAlign: 'center',
-    zIndex: 1,
     maxWidth: '500px',
   },
-  logoCircleLarge: {
-    width: '120px',
-    height: '120px',
-    borderRadius: borderRadius.full,
-    backgroundColor: 'rgba(255, 255, 255, 0.15)',
-    backdropFilter: 'blur(10px)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    margin: '0 auto 32px',
-    boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
-  },
-  logoIconLarge: {
-    fontSize: '64px',
-    color: colors.surface,
+  logo: {
+    height: '70px',
+    width: 'auto',
+    marginBottom: '32px',
+    filter: 'brightness(0) invert(1)',
+    dropShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
   },
   brandTitle: {
-    fontSize: '48px',
+    fontSize: '52px',
     fontWeight: 'bold',
     color: colors.surface,
     marginBottom: '16px',
     letterSpacing: '-1px',
+    textShadow: '0 2px 8px rgba(0, 0, 0, 0.3)',
   },
   brandSubtitle: {
-    fontSize: '20px',
-    color: 'rgba(255, 255, 255, 0.9)',
+    fontSize: '22px',
+    color: 'rgba(255, 255, 255, 0.95)',
     marginBottom: '48px',
     fontWeight: '400',
+    textShadow: '0 1px 4px rgba(0, 0, 0, 0.2)',
   },
   brandFeatures: {
     display: 'flex',
     flexDirection: 'column',
-    gap: '20px',
+    gap: '24px',
     alignItems: 'flex-start',
-    maxWidth: '360px',
+    maxWidth: '420px',
     margin: '0 auto',
   },
   featureItem: {
@@ -225,39 +222,48 @@ const styles = {
     alignItems: 'center',
     gap: '16px',
     color: colors.surface,
-    fontSize: '16px',
+    fontSize: '17px',
     fontWeight: '500',
+    textShadow: '0 1px 3px rgba(0, 0, 0, 0.2)',
   },
   featureDot: {
-    width: '10px',
-    height: '10px',
+    width: '12px',
+    height: '12px',
     borderRadius: borderRadius.full,
     backgroundColor: colors.surface,
     flexShrink: 0,
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.2)',
   },
-  rightPanel: {
+  rightContent: {
     flex: 1,
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
     padding: '60px',
-    backgroundColor: colors.surface,
+    position: 'relative',
+    zIndex: 2,
   },
-  formContainer: {
+  floatingCard: {
     width: '100%',
-    maxWidth: '460px',
+    maxWidth: '480px',
+    backgroundColor: colors.surface,
+    borderRadius: '24px',
+    padding: '48px',
+    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1)',
+    backdropFilter: 'blur(10px)',
   },
   formHeader: {
     marginBottom: spacing.xl,
+    textAlign: 'center',
   },
   formTitle: {
-    fontSize: '36px',
+    fontSize: '32px',
     fontWeight: 'bold',
     color: colors.textPrimary,
     marginBottom: '8px',
   },
   formSubtitle: {
-    fontSize: '16px',
+    fontSize: '15px',
     color: colors.textSecondary,
   },
   error: {
@@ -329,52 +335,63 @@ const styles = {
   buttonIcon: {
     fontSize: '22px',
   },
-  divider: {
-    display: 'flex',
-    alignItems: 'center',
-    margin: `${spacing.xl} 0 ${spacing.lg} 0`,
-    position: 'relative',
-  },
-  dividerText: {
-    fontSize: '13px',
-    color: colors.textSecondary,
-    backgroundColor: colors.surface,
-    padding: '0 16px',
-    position: 'relative',
-    zIndex: 1,
-    margin: '0 auto',
-  },
-  credentialsBox: {
-    backgroundColor: colors.background,
-    padding: spacing.lg,
-    borderRadius: borderRadius.md,
-    border: `1px solid ${colors.border}`,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: spacing.md,
-  },
-  credentialRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: spacing.md,
-  },
-  credentialIcon: {
-    fontSize: '24px',
-    color: colors.primary,
-    flexShrink: 0,
-  },
-  credentialLabel: {
-    fontSize: '12px',
-    color: colors.textSecondary,
-    fontWeight: '500',
-    marginBottom: '2px',
-  },
-  credentialValue: {
-    fontSize: '14px',
-    color: colors.textPrimary,
-    fontWeight: '600',
-    fontFamily: 'monospace',
-  },
 };
+
+// Add CSS for animations and responsive design
+const styleSheet = `
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  button:hover {
+    opacity: 0.9;
+  }
+
+  @media (max-width: 968px) {
+    .leftContent {
+      display: none !important;
+    }
+    .rightContent {
+      flex: 1 !important;
+      width: 100% !important;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .floatingCard {
+      padding: 32px 24px !important;
+      border-radius: 16px !important;
+    }
+  }
+`;
+
+if (typeof document !== 'undefined') {
+  const existingStyle = document.getElementById('login-styles');
+  if (existingStyle) {
+    existingStyle.remove();
+  }
+  const style = document.createElement('style');
+  style.id = 'login-styles';
+  style.textContent = styleSheet;
+  document.head.appendChild(style);
+}
 
 export default Login;
