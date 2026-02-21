@@ -168,7 +168,7 @@ export default function ProfileScreen() {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Profile</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/edit-profile')}>
           <Ionicons name="create-outline" size={24} color={colors.textPrimary} />
         </TouchableOpacity>
       </View>

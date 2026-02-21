@@ -288,31 +288,113 @@ const Returns = () => {
             </button>
           </div>
         ) : (
-          <ResponsiveTable>
-            <table style={styles.table}>
-              <thead>
-                <tr style={styles.tableHeader}>
-                  {columns.map((col, index) => (
-                    <th key={index} style={styles.th}>{col.header}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {returns.map((returnItem) => (
-                  <tr key={returnItem._id} style={styles.tableRow}>
-                    {columns.map((col, index) => (
-                      <td key={index} style={styles.td}>
-                        {col.render 
-                          ? col.render(returnItem[col.accessor], returnItem)
-                          : returnItem[col.accessor]
-                        }
-                      </td>
+          <>
+            {/* Desktop Table View */}
+            <div className="desktopView" style={styles.tableWrapper}>
+              <ResponsiveTable>
+                <table style={styles.table}>
+                  <thead>
+                    <tr style={styles.tableHeader}>
+                      {columns.map((col, index) => (
+                        <th key={index} style={styles.th}>{col.header}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {returns.map((returnItem) => (
+                      <tr key={returnItem._id} style={styles.tableRow}>
+                        {columns.map((col, index) => (
+                          <td key={index} style={styles.td}>
+                            {col.render 
+                              ? col.render(returnItem[col.accessor], returnItem)
+                              : returnItem[col.accessor]
+                            }
+                          </td>
+                        ))}
+                      </tr>
                     ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </ResponsiveTable>
+                  </tbody>
+                </table>
+              </ResponsiveTable>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="mobileView" style={styles.mobileCardsContainer}>
+              {returns.map((returnItem, index) => (
+                <div key={returnItem._id} style={styles.mobileCard}>
+                  <div style={styles.mobileCardHeader}>
+                    <span style={{ fontWeight: '600', color: colors.primary }}>{returnItem.returnNumber}</span>
+                    <span
+                      style={{
+                        padding: '4px 12px',
+                        borderRadius: borderRadius.sm,
+                        backgroundColor: `${getStatusColor(returnItem.status)}15`,
+                        color: getStatusColor(returnItem.status),
+                        fontSize: '12px',
+                        fontWeight: '500',
+                        textTransform: 'capitalize',
+                      }}
+                    >
+                      {returnItem.status.replace('_', ' ')}
+                    </span>
+                  </div>
+                  
+                  <div style={styles.mobileCardBody}>
+                    <div style={styles.mobileCardRow}>
+                      <span style={styles.mobileLabel}>Order #:</span>
+                      <span style={styles.mobileValue}>{returnItem.order?.orderNumber || 'N/A'}</span>
+                    </div>
+                    
+                    <div style={styles.mobileCardRow}>
+                      <span style={styles.mobileLabel}>Customer:</span>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontWeight: '500', fontSize: '13px' }}>{returnItem.user?.name}</div>
+                        <div style={{ fontSize: '12px', color: colors.textSecondary }}>{returnItem.user?.mobile}</div>
+                      </div>
+                    </div>
+                    
+                    <div style={styles.mobileCardRow}>
+                      <span style={styles.mobileLabel}>Type:</span>
+                      <span
+                        style={{
+                          padding: '4px 12px',
+                          borderRadius: borderRadius.sm,
+                          backgroundColor: `${getTypeColor(returnItem.type)}15`,
+                          color: getTypeColor(returnItem.type),
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          textTransform: 'capitalize',
+                        }}
+                      >
+                        {returnItem.type}
+                      </span>
+                    </div>
+                    
+                    <div style={styles.mobileCardRow}>
+                      <span style={styles.mobileLabel}>Refund Amount:</span>
+                      <span style={styles.mobileValue}>₹{returnItem.refundAmount?.toFixed(2) || '0.00'}</span>
+                    </div>
+                    
+                    <div style={styles.mobileCardRow}>
+                      <span style={styles.mobileLabel}>Date:</span>
+                      <span style={styles.mobileValue}>{new Date(returnItem.createdAt).toLocaleDateString('en-IN')}</span>
+                    </div>
+                  </div>
+                  
+                  <div style={styles.mobileCardFooter}>
+                    <button
+                      onClick={() => handleViewReturn(returnItem)}
+                      style={styles.actionButton}
+                      title="View Details"
+                    >
+                      <MdVisibility size={18} />
+                      <span style={{ marginLeft: '6px' }}>View Details</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
         )}
 
         {/* Pagination */}
@@ -637,6 +719,7 @@ const styles = {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
   },
   pagination: {
     display: 'flex',
@@ -658,6 +741,57 @@ const styles = {
   paginationInfo: {
     fontSize: '14px',
     color: colors.textSecondary,
+  },
+  tableWrapper: {
+    width: '100%',
+    overflowX: 'auto',
+    overflowY: 'auto',
+    maxHeight: '600px',
+  },
+  mobileCardsContainer: {
+    display: 'none',
+    padding: spacing.md,
+  },
+  mobileCard: {
+    backgroundColor: colors.surface,
+    border: `1px solid ${colors.border}`,
+    borderRadius: borderRadius.lg,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  mobileCardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    paddingBottom: spacing.sm,
+    borderBottom: `1px solid ${colors.border}`,
+  },
+  mobileCardBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: spacing.sm,
+  },
+  mobileCardRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '8px 0',
+  },
+  mobileLabel: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  mobileValue: {
+    fontSize: '13px',
+    color: colors.textPrimary,
+    textAlign: 'right',
+  },
+  mobileCardFooter: {
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTop: `1px solid ${colors.border}`,
   },
   modalOverlay: {
     position: 'fixed',
@@ -867,5 +1001,35 @@ const styles = {
     color: colors.textPrimary,
   },
 };
+
+// Add responsive styles
+if (typeof document !== 'undefined') {
+  const existingStyle = document.getElementById('returns-responsive-styles');
+  if (existingStyle) {
+    existingStyle.remove();
+  }
+  const styleSheet = document.createElement('style');
+  styleSheet.id = 'returns-responsive-styles';
+  styleSheet.textContent = `
+    .desktopView {
+      display: block;
+    }
+
+    .mobileView {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .desktopView {
+        display: none !important;
+      }
+
+      .mobileView {
+        display: block !important;
+      }
+    }
+  `;
+  document.head.appendChild(styleSheet);
+}
 
 export default Returns;

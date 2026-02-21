@@ -29,9 +29,11 @@ export default function HomeScreen() {
   const [categories, setCategories] = useState([]);
   const [featuredProducts, setFeaturedProducts] = useState([]);
   const [newArrivals, setNewArrivals] = useState([]);
+  const [flashSaleProducts, setFlashSaleProducts] = useState([]);
   const [wishlistItems, setWishlistItems] = useState<Set<string>>(new Set());
   const [userName, setUserName] = useState('Guest');
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [timeLeft, setTimeLeft] = useState({ hours: 2, minutes: 12, seconds: 56 });
   const scrollViewRef = useRef<ScrollView>(null);
 
   const bannerData = [
@@ -59,6 +61,35 @@ export default function HomeScreen() {
     fetchData();
     loadWishlistStatus();
     loadUserName();
+  }, []);
+
+  // Countdown timer for flash sale
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        let { hours, minutes, seconds } = prev;
+        
+        if (seconds > 0) {
+          seconds--;
+        } else if (minutes > 0) {
+          minutes--;
+          seconds = 59;
+        } else if (hours > 0) {
+          hours--;
+          minutes = 59;
+          seconds = 59;
+        } else {
+          // Reset timer when it reaches 0
+          hours = 2;
+          minutes = 12;
+          seconds = 56;
+        }
+        
+        return { hours, minutes, seconds };
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
   }, []);
 
   // Auto-scroll banner
@@ -163,11 +194,14 @@ export default function HomeScreen() {
 
   const fetchProducts = async () => {
     try {
-      const response = await productService.getProducts({ limit: 10 });
+      const response = await productService.getProducts({ limit: 20 });
       if (response.success) {
         const products = response.data.products;
-        setFeaturedProducts(products.slice(0, 5));
-        setNewArrivals(products.slice(5, 10));
+        // Shuffle products for variety
+        const shuffled = [...products].sort(() => 0.5 - Math.random());
+        setFeaturedProducts(shuffled.slice(0, 6));
+        setNewArrivals(shuffled.slice(6, 12));
+        setFlashSaleProducts(shuffled.slice(12, 18));
       }
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -200,45 +234,41 @@ export default function HomeScreen() {
       <TouchableOpacity 
         style={styles.productCard}
         onPress={() => router.push(`/product/${item._id}`)}>
-        <Image 
-          source={{ uri: item.images?.[0] || 'https://via.placeholder.com/300x400/704F38/FFFFFF?text=Product' }} 
-          style={styles.productImage} 
-        />
-        {hasDiscount && (
-          <View style={styles.discountBadge}>
-            <Text style={styles.discountText}>
-              {Math.round(((item.price - item.discountPrice) / item.price) * 100)}% OFF
-            </Text>
-          </View>
-        )}
-        <TouchableOpacity 
-          style={styles.wishlistBtn}
-          onPress={(e) => handleToggleWishlist(item, e)}
-          activeOpacity={0.7}>
-          <Ionicons 
-            name={isWishlisted ? "heart" : "heart-outline"} 
-            size={20} 
-            color={isWishlisted ? colors.error : colors.textPrimary} 
+        <View style={styles.productImageContainer}>
+          <Image 
+            source={{ uri: item.images?.[0] || 'https://via.placeholder.com/300x400/704F38/FFFFFF?text=Product' }} 
+            style={styles.productImage} 
           />
-        </TouchableOpacity>
+          {hasDiscount && (
+            <View style={styles.discountBadge}>
+              <Text style={styles.discountText}>
+                {Math.round(((item.price - item.discountPrice) / item.price) * 100)}% OFF
+              </Text>
+            </View>
+          )}
+          <TouchableOpacity 
+            style={styles.wishlistBtn}
+            onPress={(e) => handleToggleWishlist(item, e)}
+            activeOpacity={0.7}>
+            <Ionicons 
+              name={isWishlisted ? "heart" : "heart-outline"} 
+              size={22} 
+              color={isWishlisted ? colors.error : colors.textPrimary} 
+            />
+          </TouchableOpacity>
+        </View>
         <View style={styles.productInfo}>
-          <Text style={styles.productName} numberOfLines={2}>
+          <Text style={styles.productName} numberOfLines={1}>
             {item.name}
           </Text>
-          <View style={styles.ratingContainer}>
-            <Ionicons name="star" size={14} color={colors.warning} />
-            <Text style={styles.ratingText}>{item.rating || 4.0}</Text>
+          <View style={styles.ratingRow}>
+            <Ionicons name="star" size={16} color={colors.warning} />
+            <Text style={styles.ratingText}>{item.rating || 4.5}</Text>
           </View>
-          <View style={styles.priceContainer}>
-            <Text style={styles.productPrice}>₹{displayPrice}</Text>
-            {hasDiscount && (
-              <Text style={styles.originalPrice}>₹{item.price}</Text>
-            )}
-          </View>
-          <TouchableOpacity style={styles.addToCartBtn}>
-            <Ionicons name="cart-outline" size={18} color={colors.surface} />
-            <Text style={styles.addToCartText}>Add to Cart</Text>
-          </TouchableOpacity>
+          <Text style={styles.productPrice}>₹{displayPrice}</Text>
+          {hasDiscount && (
+            <Text style={styles.originalPrice}>₹{item.price}</Text>
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -299,7 +329,7 @@ export default function HomeScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Categories</Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/(tabs)/categories')}>
                 <Text style={styles.seeAllText}>See All</Text>
               </TouchableOpacity>
             </View>
@@ -308,7 +338,7 @@ export default function HomeScreen() {
                 horizontal 
                 showsHorizontalScrollIndicator={false}
                 contentContainerStyle={styles.categoriesScroll}>
-                {categories.map((category) => (
+                {categories.slice(0, 6).map((category) => (
                   <TouchableOpacity 
                     key={category._id} 
                     style={styles.categoryCard}
@@ -368,11 +398,49 @@ export default function HomeScreen() {
             </View>
           </View>
 
+          {/* Flash Sale Section */}
+          <View style={styles.section}>
+            <View style={styles.flashSaleHeader}>
+              <View style={styles.flashSaleLeft}>
+                <Ionicons name="flash" size={24} color={colors.error} />
+                <Text style={styles.flashSaleTitle}>Flash Sale</Text>
+              </View>
+              <View style={styles.timerContainer}>
+                <Text style={styles.timerLabel}>Closing in:</Text>
+                <View style={styles.timerBoxes}>
+                  <View style={styles.timerBox}>
+                    <Text style={styles.timerNumber}>{String(timeLeft.hours).padStart(2, '0')}</Text>
+                  </View>
+                  <Text style={styles.timerColon}>:</Text>
+                  <View style={styles.timerBox}>
+                    <Text style={styles.timerNumber}>{String(timeLeft.minutes).padStart(2, '0')}</Text>
+                  </View>
+                  <Text style={styles.timerColon}>:</Text>
+                  <View style={styles.timerBox}>
+                    <Text style={styles.timerNumber}>{String(timeLeft.seconds).padStart(2, '0')}</Text>
+                  </View>
+                </View>
+              </View>
+            </View>
+            {flashSaleProducts.length > 0 ? (
+              <FlatList
+                data={flashSaleProducts}
+                renderItem={renderProductCard}
+                keyExtractor={(item) => item._id}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.productsList}
+              />
+            ) : (
+              <Text style={styles.emptyText}>No flash sale products</Text>
+            )}
+          </View>
+
           {/* Featured Products */}
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>Featured Products</Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/(tabs)/categories')}>
                 <Text style={styles.seeAllText}>See All</Text>
               </TouchableOpacity>
             </View>
@@ -394,7 +462,7 @@ export default function HomeScreen() {
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
               <Text style={styles.sectionTitle}>New Arrivals</Text>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => router.push('/(tabs)/categories')}>
                 <Text style={styles.seeAllText}>See All</Text>
               </TouchableOpacity>
             </View>
@@ -633,56 +701,62 @@ const styles = StyleSheet.create({
     paddingRight: spacing.md,
   },
   productCard: {
-    width: 190,
+    width: 170,
     backgroundColor: colors.surface,
     borderRadius: borderRadius.xl,
     marginRight: spacing.md,
     overflow: 'hidden',
-    ...shadows.large,
+    ...shadows.medium,
+  },
+  productImageContainer: {
+    width: '100%',
+    height: 200,
     position: 'relative',
+    backgroundColor: '#F5F0E8',
   },
   productImage: {
     width: '100%',
-    height: 220,
-    backgroundColor: colors.backgroundDark,
+    height: '100%',
     resizeMode: 'cover',
   },
   wishlistBtn: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    top: 12,
+    right: 12,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: colors.surface,
     justifyContent: 'center',
     alignItems: 'center',
     ...shadows.small,
-    zIndex: 1,
   },
   productInfo: {
     padding: spacing.md,
+    paddingTop: spacing.sm,
   },
   productName: {
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '600',
     color: colors.textPrimary,
     marginBottom: 6,
   },
-  ratingContainer: {
+  ratingRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 4,
+    marginBottom: 6,
   },
   ratingText: {
-    fontSize: 12,
-    color: colors.textSecondary,
+    fontSize: 13,
+    color: colors.textPrimary,
     marginLeft: 4,
+    fontWeight: '600',
   },
   productPrice: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: 'bold',
-    color: colors.primary,
+    color: colors.textPrimary,
+    marginBottom: 2,
   },
   priceContainer: {
     flexDirection: 'row',
@@ -691,19 +765,18 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   originalPrice: {
-    fontSize: 14,
+    fontSize: 12,
     color: colors.textSecondary,
     textDecorationLine: 'line-through',
   },
   discountBadge: {
     position: 'absolute',
-    top: 10,
-    left: 10,
+    top: 12,
+    left: 12,
     backgroundColor: colors.error,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: borderRadius.sm,
-    zIndex: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: borderRadius.md,
   },
   discountText: {
     color: colors.surface,
@@ -726,18 +799,57 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     paddingVertical: spacing.lg,
   },
-  addToCartBtn: {
+  flashSaleHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    backgroundColor: colors.surface,
+    padding: spacing.md,
+    borderRadius: borderRadius.lg,
+    ...shadows.small,
+  },
+  flashSaleLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: colors.primary,
-    paddingVertical: spacing.sm,
-    borderRadius: borderRadius.md,
-    gap: 6,
+    gap: spacing.xs,
   },
-  addToCartText: {
+  flashSaleTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+  },
+  timerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+  },
+  timerLabel: {
+    fontSize: 12,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  timerBoxes: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  timerBox: {
+    backgroundColor: colors.error,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: borderRadius.sm,
+    minWidth: 32,
+    alignItems: 'center',
+  },
+  timerNumber: {
     color: colors.surface,
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  timerColon: {
+    color: colors.textPrimary,
+    fontSize: 14,
+    fontWeight: 'bold',
   },
 });

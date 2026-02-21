@@ -135,7 +135,7 @@ const Products = () => {
       </motion.div>
 
       {/* Products Grid */}
-      <div style={styles.grid}>
+      <div style={styles.grid} className="grid">
         {products.map((product, index) => (
           <motion.div
             key={product._id}
@@ -465,21 +465,23 @@ const scrollbarStyles = `
     background: ${colors.primary};
   }
 
-  @media (max-width: 1024px) {
-    .tableWrapper {
-      max-height: 500px !important;
-    }
-  }
-
   @media (max-width: 768px) {
-    .tableWrapper {
-      max-height: 450px !important;
+    .grid {
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)) !important;
+      gap: ${spacing.md} !important;
     }
   }
 
   @media (max-width: 480px) {
+    .grid {
+      grid-template-columns: 1fr 1fr !important;
+      gap: ${spacing.sm} !important;
+    }
+  }
+
+  @media (max-width: 1024px) {
     .tableWrapper {
-      max-height: 400px !important;
+      max-height: 500px !important;
     }
   }
 `;

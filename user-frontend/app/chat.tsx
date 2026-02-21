@@ -265,14 +265,17 @@ export default function ChatScreen() {
           />
           
           <TouchableOpacity
-            style={styles.sendButton}
+            style={[
+              styles.sendButton,
+              (!message.trim() || sending) && styles.sendButtonDisabled
+            ]}
             onPress={handleSendMessage}
             disabled={!message.trim() || sending}
           >
             {sending ? (
               <ActivityIndicator size="small" color={colors.surface} />
             ) : (
-              <Ionicons name="mic" size={24} color={colors.surface} />
+              <Ionicons name="send" size={20} color={colors.surface} />
             )}
           </TouchableOpacity>
         </View>
@@ -532,5 +535,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginLeft: spacing.sm,
+  },
+  sendButtonDisabled: {
+    backgroundColor: colors.border,
+    opacity: 0.5,
   },
 });

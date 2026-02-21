@@ -196,7 +196,8 @@ const Tickets = () => {
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.2 }}
       >
-        <div style={styles.tableWrapper} className="tableWrapper">
+        {/* Desktop Table View */}
+        <div style={styles.tableWrapper} className="tableWrapper desktopView">
           <table style={styles.table}>
             <thead>
               <tr style={styles.tableHeader}>
@@ -291,6 +292,99 @@ const Tickets = () => {
               ))}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Card View */}
+        <div className="mobileView" style={styles.mobileCardsContainer}>
+          {tickets.map((ticket, index) => (
+            <motion.div
+              key={ticket._id}
+              style={styles.mobileCard}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.05 }}
+              whileHover={{ scale: 1.02 }}
+            >
+              <div style={styles.mobileCardHeader}>
+                <span style={styles.ticketNumber}>{ticket.ticketNumber}</span>
+                <span
+                  style={{
+                    ...styles.statusBadge,
+                    backgroundColor: getStatusColor(ticket.status) + '20',
+                    color: getStatusColor(ticket.status),
+                  }}
+                >
+                  {getStatusIcon(ticket.status)}
+                  {ticket.status.replace('_', ' ')}
+                </span>
+              </div>
+              
+              <div style={styles.mobileCardBody}>
+                <div style={styles.userCell}>
+                  <div style={styles.avatar}>
+                    {ticket.user?.name?.charAt(0).toUpperCase() || 'U'}
+                  </div>
+                  <div>
+                    <div style={styles.userName}>{ticket.user?.name || 'N/A'}</div>
+                    <div style={styles.userMobile}>{ticket.user?.mobile}</div>
+                  </div>
+                </div>
+                
+                <div style={styles.mobileCardRow}>
+                  <span style={styles.mobileLabel}>Subject:</span>
+                  <span style={styles.mobileValue}>{ticket.subject}</span>
+                </div>
+                
+                <div style={styles.mobileCardRow}>
+                  <span style={styles.mobileLabel}>Category:</span>
+                  <span style={styles.categoryBadge}>{ticket.category}</span>
+                </div>
+                
+                <div style={styles.mobileCardRow}>
+                  <span style={styles.mobileLabel}>Priority:</span>
+                  <span
+                    style={{
+                      ...styles.priorityBadge,
+                      backgroundColor: getPriorityColor(ticket.priority) + '20',
+                      color: getPriorityColor(ticket.priority),
+                    }}
+                  >
+                    {ticket.priority === 'high' && <MdPriorityHigh size={14} />}
+                    {ticket.priority}
+                  </span>
+                </div>
+                
+                <div style={styles.mobileCardRow}>
+                  <span style={styles.mobileLabel}>Created:</span>
+                  <span style={styles.mobileValue}>{new Date(ticket.createdAt).toLocaleDateString()}</span>
+                </div>
+              </div>
+              
+              <div style={styles.mobileCardFooter}>
+                <motion.button
+                  onClick={() => handleViewTicket(ticket._id)}
+                  style={styles.viewButton}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <MdMessage size={16} />
+                  View
+                </motion.button>
+                {ticket.status !== 'closed' && (
+                  <select
+                    value={ticket.status}
+                    onChange={(e) => handleStatusChange(ticket._id, e.target.value)}
+                    style={styles.statusSelect}
+                  >
+                    <option value="open">Open</option>
+                    <option value="in_progress">In Progress</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="closed">Closed</option>
+                  </select>
+                )}
+              </div>
+            </motion.div>
+          ))}
         </div>
 
         {tickets.length === 0 && (
@@ -765,10 +859,64 @@ const styles = {
     cursor: 'pointer',
     alignSelf: 'flex-end',
   },
+  mobileCardsContainer: {
+    display: 'none',
+  },
+  mobileCard: {
+    backgroundColor: colors.surface,
+    border: `1px solid ${colors.border}`,
+    borderRadius: '12px',
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  mobileCardHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.md,
+    paddingBottom: spacing.sm,
+    borderBottom: `1px solid ${colors.border}`,
+  },
+  mobileCardBody: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: spacing.sm,
+  },
+  mobileCardRow: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: '8px 0',
+  },
+  mobileLabel: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
+  mobileValue: {
+    fontSize: '13px',
+    color: colors.textPrimary,
+    textAlign: 'right',
+  },
+  mobileCardFooter: {
+    display: 'flex',
+    gap: spacing.sm,
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTop: `1px solid ${colors.border}`,
+  },
 };
 
 // Add scrollbar styling
 const scrollbarStyles = `
+  .desktopView {
+    display: block;
+  }
+
+  .mobileView {
+    display: none;
+  }
+
   .tableWrapper {
     display: block;
   }
@@ -797,15 +945,19 @@ const scrollbarStyles = `
     background: ${colors.primary};
   }
 
-  @media (max-width: 1024px) {
-    .tableWrapper {
-      max-height: 500px !important;
+  @media (max-width: 768px) {
+    .desktopView {
+      display: none !important;
+    }
+
+    .mobileView {
+      display: block !important;
     }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 1024px) {
     .tableWrapper {
-      max-height: 450px !important;
+      max-height: 500px !important;
     }
   }
 

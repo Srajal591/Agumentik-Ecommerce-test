@@ -229,6 +229,21 @@ export default function CategoriesScreen() {
 
   return (
     <View style={styles.container}>
+      {/* Header */}
+      <View style={styles.header}>
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={styles.headerTitle}>Products</Text>
+            <Text style={styles.headerSubtitle}>Discover amazing deals</Text>
+          </View>
+          <TouchableOpacity 
+            style={styles.filterButton}
+            onPress={() => Alert.alert('Filters', 'Filter options coming soon!')}>
+            <Ionicons name="options-outline" size={24} color={colors.primary} />
+          </TouchableOpacity>
+        </View>
+      </View>
+
       {/* Search Bar */}
       <View style={styles.searchContainer}>
         <View style={styles.searchInputContainer}>
@@ -247,7 +262,6 @@ export default function CategoriesScreen() {
           )}
         </View>
       </View>
-
       {/* Categories */}
       {renderCategorySection()}
 
@@ -288,6 +302,38 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
+  header: {
+    backgroundColor: colors.surface,
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.md,
+    ...shadows.medium,
+  },
+  headerContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: colors.textPrimary,
+    marginBottom: 4,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontWeight: '500',
+  },
+  filterButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: colors.background,
+    justifyContent: 'center',
+    alignItems: 'center',
+    ...shadows.small,
+  },
   centered: {
     flex: 1,
     justifyContent: 'center',
@@ -302,7 +348,6 @@ const styles = StyleSheet.create({
   searchContainer: {
     padding: spacing.md,
     backgroundColor: colors.surface,
-    ...shadows.small,
   },
   searchInputContainer: {
     flexDirection: 'row',
